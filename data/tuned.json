@@ -1,0 +1,138 @@
+{
+ "Англия": {
+  "xi": 0.0045,
+  "l2": 0.3,
+  "logloss": 1.0466989731026088,
+  "logloss_default": 1.0521057656638464,
+  "logloss_market": 1.0263603767670655,
+  "value": {
+   "1X2": {
+    "enabled": false,
+    "weight": 0.7,
+    "min_edge": 0.08,
+    "tune_roi": 0.0008009708737863993,
+    "tune_bets": 412,
+    "valid_roi": -0.17136659436008678,
+    "valid_bets": 461
+   },
+   "OU": {
+    "enabled": false,
+    "weight": 0.7,
+    "min_edge": 0.08,
+    "tune_roi": -0.04549450549450551,
+    "tune_bets": 182,
+    "valid_roi": -0.0717063492063492,
+    "valid_bets": 252
+   }
+  }
+ },
+ "Испания": {
+  "xi": 0.001,
+  "l2": 3.0,
+  "logloss": 1.0137969120439962,
+  "logloss_default": 1.0142112260550595,
+  "logloss_market": 0.9964887604255899,
+  "value": {
+   "1X2": {
+    "enabled": false,
+    "weight": 0.35,
+    "min_edge": 0.12,
+    "tune_roi": 0.24431372549019606,
+    "tune_bets": 51,
+    "valid_roi": -0.057200000000000015,
+    "valid_bets": 75
+   },
+   "OU": {
+    "enabled": false,
+    "weight": 0.7,
+    "min_edge": 0.03,
+    "tune_roi": -0.012814814814814798,
+    "tune_bets": 135,
+    "valid_roi": -0.11139072847682122,
+    "valid_bets": 151
+   }
+  }
+ },
+ "Италия": {
+  "xi": 0.0045,
+  "l2": 0.3,
+  "logloss": 1.0016566187675249,
+  "logloss_default": 1.0056926104437103,
+  "logloss_market": 0.9822166144390931,
+  "value": {
+   "1X2": {
+    "enabled": true,
+    "weight": 0.35,
+    "min_edge": 0.12,
+    "tune_roi": 0.09166666666666669,
+    "tune_bets": 30,
+    "valid_roi": 0.04902439024390241,
+    "valid_bets": 41
+   },
+   "OU": {
+    "enabled": true,
+    "weight": 0.35,
+    "min_edge": 0.03,
+    "tune_roi": 0.18428571428571427,
+    "tune_bets": 49,
+    "valid_roi": 0.10390625,
+    "valid_bets": 64
+   }
+  }
+ },
+ "Германия": {
+  "xi": 0.0019,
+  "l2": 1.0,
+  "logloss": 1.0320844078976703,
+  "logloss_default": 1.0320844078976703,
+  "logloss_market": 1.0123579481539702,
+  "value": {
+   "1X2": {
+    "enabled": false,
+    "weight": 0.7,
+    "min_edge": 0.03,
+    "tune_roi": -0.2292817679558011,
+    "tune_bets": 181,
+    "valid_roi": -0.021780104712041885,
+    "valid_bets": 191
+   },
+   "OU": {
+    "enabled": false,
+    "weight": 0.5,
+    "min_edge": 0.05,
+    "tune_roi": -0.0972340425531915,
+    "tune_bets": 47,
+    "valid_roi": -0.1745205479452055,
+    "valid_bets": 73
+   }
+  }
+ },
+ "Франция": {
+  "xi": 0.0045,
+  "l2": 1.0,
+  "logloss": 1.046786361709113,
+  "logloss_default": 1.049004181989502,
+  "logloss_market": 1.0299749121164745,
+  "value": {
+   "1X2": {
+    "enabled": false,
+    "weight": 0.5,
+    "min_edge": 0.08,
+    "tune_roi": -0.028444444444444432,
+    "tune_bets": 90,
+    "valid_roi": -0.13749999999999998,
+    "valid_bets": 104
+   },
+   "OU": {
+    "enabled": false,
+    "weight": 0.35,
+    "min_edge": 0.03,
+    "tune_roi": -0.05282608695652175,
+    "tune_bets": 46,
+    "valid_roi": -0.16111111111111115,
+    "valid_bets": 63
+   }
+  }
+ },
+ "_generated": "2026-09-24"
+}
