@@ -24,10 +24,23 @@ COUNTRIES = {
 CL_CODE = "CL"
 CL_NAME = "Шампионска лига"
 
+# Лига на нациите – модел за националните отбори, обучен върху всички
+# международни мачове (github.com/martj42/international_results).
+NL_CODE = "UNL"
+NL_NAME = "Лига на нациите"
+INTL_YEARS = 4               # години назад (националните отбори играят рядко)
+INTL_TIME_DECAY_XI = 0.0010
+FRIENDLY_WEIGHT = 0.5        # приятелските мачове тежат наполовина
+# Ако автоматичният източник няма програмата, мачовете могат да се добавят
+# ръчно в този файл (колони: date,home,away,neutral – имената на английски).
+NL_MANUAL_FIXTURES = ROOT / "nations_league_fixtures.csv"
+
 DIV_NAMES = {d: n for divs in COUNTRIES.values() for d, n in divs.items()}
 DIV_NAMES[CL_CODE] = CL_NAME
 DIV_COUNTRY = {d: c for c, divs in COUNTRIES.items() for d in divs}
 DIV_COUNTRY[CL_CODE] = "Европа"
+DIV_NAMES[NL_CODE] = NL_NAME
+DIV_COUNTRY[NL_CODE] = "Национални отбори"
 
 # Колко сезона назад да ползваме за обучение
 N_SEASONS = 3
