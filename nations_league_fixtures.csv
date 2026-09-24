@@ -1,7 +1,157 @@
 date,time,home,away,neutral
-24/09/2026,21:45,Netherlands,Germany,FALSE
-24/09/2026,21:45:00,Norway,Denmark,FALSE
-24/09/2026,21:45:00,Portugal,Wales,FALSE
+24/09/2026,21:45,Andorra,Malta,FALSE
 24/09/2026,21:45:00,Serbia,Greece,FALSE
-24/09/2026,21:45:00,Austria,Israel,FALSE
 24/09/2026,21:45:00,Kosovo,Republic of Ireland,FALSE
+24/09/2026,21:45:00,Liechtenstein,Lithuania,FALSE
+24/09/2026,21:45:00,Portugal,Wales,FALSE
+24/09/2026,21:45:00,Norway,Denmark,FALSE
+,,Austria,Israel,FALSE
+,,Netherlands,Germany,FALSE
+,,Georgia,Northern Ireland,FALSE
+,,Armenia,Latvia,FALSE
+,,Hungary,Ukraine,FALSE
+,,Turkey,France,FALSE
+,,Italy,Belgium,FALSE
+,,Poland,Bosnia and Herzegovina,FALSE
+,,Sweden,Romania,FALSE
+,,Montenegro,Cyprus,FALSE
+,,Slovenia,Scotland,FALSE
+,,San Marino,Finland,FALSE
+,,Faroe Islands,Kazakhstan,FALSE
+,,Iceland,Estonia,FALSE
+,,Bulgaria,Luxembourg,FALSE
+,,FYR Macedonia,Switzerland,FALSE
+,,Albania,Belarus,FALSE
+,,England,Spain,FALSE
+,,Czech Republic,Croatia,FALSE
+,,Slovakia,Moldova,FALSE
+,,Lithuania,Azerbaijan,FALSE
+,,Denmark,Wales,FALSE
+,,Serbia,Netherlands,FALSE
+,,Austria,Kosovo,FALSE
+,,Gibraltar,Andorra,FALSE
+,,Norway,Portugal,FALSE
+,,Germany,Greece,FALSE
+,,Israel,Republic of Ireland,FALSE
+,,Georgia,Ukraine,FALSE
+,,Armenia,Montenegro,FALSE
+,,Latvia,Cyprus,FALSE
+,,Romania,Bosnia and Herzegovina,FALSE
+,,Turkey,Italy,FALSE
+,,Belgium,France,FALSE
+,,Sweden,Poland,FALSE
+,,Northern Ireland,Hungary,FALSE
+,,Moldova,Faroe Islands,FALSE
+,,Finland,Belarus,FALSE
+,,Czech Republic,England,FALSE
+,,Spain,Croatia,FALSE
+,,Scotland,Switzerland,FALSE
+,,Slovenia,FYR Macedonia,FALSE
+,,Bulgaria,Estonia,FALSE
+,,San Marino,Albania,FALSE
+,,Slovakia,Kazakhstan,FALSE
+,,Luxembourg,Iceland,FALSE
+,,Azerbaijan,Liechtenstein,FALSE
+,,Republic of Ireland,Austria,FALSE
+,,Wales,Norway,FALSE
+,,Israel,Kosovo,FALSE
+,,Denmark,Portugal,FALSE
+,,Greece,Netherlands,FALSE
+,,Germany,Serbia,FALSE
+,,Malta,Gibraltar,FALSE
+,,Kazakhstan,Moldova,FALSE
+,,Cyprus,Armenia,FALSE
+,,Latvia,Montenegro,FALSE
+,,France,Italy,FALSE
+,,Belgium,Turkey,FALSE
+,,Poland,Romania,FALSE
+,,Hungary,Georgia,FALSE
+,,Bosnia and Herzegovina,Sweden,FALSE
+,,Ukraine,Northern Ireland,FALSE
+,,Faroe Islands,Slovakia,FALSE
+,,Finland,Albania,FALSE
+,,Croatia,England,FALSE
+,,Iceland,Bulgaria,FALSE
+,,Belarus,San Marino,FALSE
+,,Estonia,Luxembourg,FALSE
+,,Spain,Czech Republic,FALSE
+,,Switzerland,Slovenia,FALSE
+,,FYR Macedonia,Scotland,FALSE
+,,Azerbaijan,Lithuania,FALSE
+,,Kosovo,Austria,FALSE
+,,Malta,Andorra,FALSE
+,,Wales,Denmark,FALSE
+,,Greece,Germany,FALSE
+,,Portugal,Norway,FALSE
+,,Netherlands,Serbia,FALSE
+,,Republic of Ireland,Israel,FALSE
+,,Cyprus,Latvia,FALSE
+,,France,Belgium,FALSE
+,,Romania,Sweden,FALSE
+,,Northern Ireland,Georgia,FALSE
+,,Ukraine,Hungary,FALSE
+,,Montenegro,Armenia,FALSE
+,,Italy,Turkey,FALSE
+,,Bosnia and Herzegovina,Poland,FALSE
+,,Kazakhstan,Faroe Islands,FALSE
+,,Croatia,Spain,FALSE
+,,Scotland,Slovenia,FALSE
+,,Switzerland,FYR Macedonia,FALSE
+,,Estonia,Iceland,FALSE
+,,Moldova,Slovakia,FALSE
+,,Belarus,Finland,FALSE
+,,Albania,San Marino,FALSE
+,,England,Czech Republic,FALSE
+,,Luxembourg,Bulgaria,FALSE
+,,Armenia,Cyprus,FALSE
+,,Turkey,Belgium,FALSE
+,,Italy,France,FALSE
+,,Albania,Finland,FALSE
+,,England,Croatia,FALSE
+,,Czech Republic,Spain,FALSE
+,,San Marino,Belarus,FALSE
+,,Montenegro,Latvia,FALSE
+,,Moldova,Kazakhstan,FALSE
+,,Serbia,Germany,FALSE
+,,Bulgaria,Iceland,FALSE
+,,Netherlands,Greece,FALSE
+,,Slovenia,Switzerland,FALSE
+,,Liechtenstein,Azerbaijan,FALSE
+,,Scotland,FYR Macedonia,FALSE
+,,Slovakia,Faroe Islands,FALSE
+,,Luxembourg,Estonia,FALSE
+,,Andorra,Gibraltar,FALSE
+,,Kosovo,Israel,FALSE
+,,Norway,Wales,FALSE
+,,Georgia,Hungary,FALSE
+,,Portugal,Denmark,FALSE
+,,Northern Ireland,Ukraine,FALSE
+,,Sweden,Bosnia and Herzegovina,FALSE
+,,Austria,Republic of Ireland,FALSE
+,,Romania,Poland,FALSE
+,,Cyprus,Montenegro,FALSE
+,,Latvia,Armenia,FALSE
+,,Belarus,Albania,FALSE
+,,Finland,San Marino,FALSE
+,,Spain,England,FALSE
+,,Belgium,Italy,FALSE
+,,Croatia,Czech Republic,FALSE
+,,France,Turkey,FALSE
+,,Faroe Islands,Moldova,FALSE
+,,Kazakhstan,Slovakia,FALSE
+,,Estonia,Bulgaria,FALSE
+,,Lithuania,Liechtenstein,FALSE
+,,Iceland,Luxembourg,FALSE
+,,Greece,Serbia,FALSE
+,,FYR Macedonia,Slovenia,FALSE
+,,Germany,Netherlands,FALSE
+,,Switzerland,Scotland,FALSE
+,,Gibraltar,Malta,FALSE
+,,Denmark,Norway,FALSE
+,,Poland,Sweden,FALSE
+,,Republic of Ireland,Kosovo,FALSE
+,,Wales,Portugal,FALSE
+,,Ukraine,Georgia,FALSE
+,,Bosnia and Herzegovina,Romania,FALSE
+,,Israel,Austria,FALSE
+,,Hungary,Northern Ireland,FALSE

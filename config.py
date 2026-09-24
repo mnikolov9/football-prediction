@@ -38,6 +38,8 @@ FRIENDLY_WEIGHT = 0.5        # приятелските мачове тежат 
 # Ако автоматичният източник няма програмата, мачовете могат да се добавят
 # ръчно в този файл (колони: date,home,away,neutral – имената на английски).
 NL_MANUAL_FIXTURES = ROOT / "nations_league_fixtures.csv"
+# мачове без дата във файла се показват в отделна (сгъната) секция „Дата предстои“
+NL_SHOW_UNDATED = True
 
 DIV_NAMES = {d: n for divs in COUNTRIES.values() for d, n in divs.items()}
 DIV_NAMES[CL_CODE] = CL_NAME
