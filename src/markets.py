@@ -65,23 +65,25 @@ def implied(odds: list[float]) -> list[float] | None:
     return [float(v) for v in inv / inv.sum()]
 
 
-def blend(p_model: float, p_market: float | None) -> float:
+def blend(p_model: float, p_market: float | None, weight: float | None = None) -> float:
     if p_market is None:
         return p_model
-    w = config.VALUE_MODEL_WEIGHT
+    w = config.VALUE_MODEL_WEIGHT if weight is None else weight
     return w * p_model + (1 - w) * p_market
 
 
 def value_bet(market: str, selection: str, p: float, odds: float | None,
-              best_odds: float | None = None, p_market: float | None = None) -> dict | None:
+              best_odds: float | None = None, p_market: float | None = None,
+              weight: float | None = None, min_edge: float | None = None) -> dict | None:
     """Връща value залог, ако (смесената) вероятност дава достатъчно предимство."""
     p_model = p
-    p = blend(p, p_market)
+    p = blend(p, p_market, weight)
+    min_edge = config.VALUE_MIN_EDGE if min_edge is None else min_edge
     price = best_odds if best_odds and np.isfinite(best_odds) else odds
     if price is None or not np.isfinite(price) or price <= 1:
         return None
     edge = p * price - 1
-    if edge < config.VALUE_MIN_EDGE or price > config.VALUE_MAX_ODDS or p < config.VALUE_MIN_PROB:
+    if edge < min_edge or price > config.VALUE_MAX_ODDS or p < config.VALUE_MIN_PROB:
         return None
     kelly = (p * price - 1) / (price - 1)
     return {

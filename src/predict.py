@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 import config
-from src import data, markets, names, odds_api, teammatch
+from src import data, markets, names, odds_api, params, teammatch
 from src.models import DixonColes, PoissonTeamModel
 
 MIN_CORNER_ROWS = 300
@@ -18,14 +18,25 @@ def _f(v):
     return None if v is None or (isinstance(v, float) and not np.isfinite(v)) else float(v)
 
 
-def fit_group(hist: pd.DataFrame, ref_date) -> dict:
-    """Модели за една група (държава или ШЛ)."""
-    dc = DixonColes().fit(hist, ref_date)
+def fit_group(hist: pd.DataFrame, ref_date, name: str | None = None, corners: bool = True) -> dict:
+    """Модели за една група (държава или ШЛ) с настроените за нея параметри."""
+    p = params.for_group(name) if name else {"xi": config.TIME_DECAY_XI, "l2": config.L2_PENALTY, "value": {}}
+    dc = DixonColes(xi=p["xi"], l2=p["l2"]).fit(hist, ref_date)
+    if not corners:
+        return {"goals": dc, "corners": None, "value": p["value"]}
     cm = None
     corners = hist.dropna(subset=["hc", "ac"])
     if len(corners) >= MIN_CORNER_ROWS:
         cm = PoissonTeamModel().fit(corners, ref_date, hcol="hc", acol="ac")
-    return {"goals": dc, "corners": cm}
+    return {"goals": dc, "corners": cm, "value": p["value"]}
+
+
+def _vcfg(models: dict, market: str) -> dict:
+    """Настройки за value по пазар; изключен пазар -> невъзможен праг."""
+    c = (models.get("value") or {}).get(market, {})
+    if c.get("enabled") is False:
+        return {"min_edge": float("inf")}
+    return {"weight": c.get("weight"), "min_edge": c.get("min_edge")}
 
 
 def predict_match(row: pd.Series, models: dict) -> dict:
@@ -63,13 +74,13 @@ def predict_match(row: pd.Series, models: dict) -> dict:
     for sel, p, o, mx, pm in [("1", g["p_home"], odds["odds_h"], odds["max_h"], im[0]),
                               ("X", g["p_draw"], odds["odds_d"], odds["max_d"], im[1]),
                               ("2", g["p_away"], odds["odds_a"], odds["max_a"], im[2])]:
-        v = markets.value_bet("1X2", sel, p, o, mx, pm)
+        v = markets.value_bet("1X2", sel, p, o, mx, pm, **_vcfg(models, "1X2"))
         if v:
             vb.append(v)
     io_ = imp_ou or [None] * 2
     for sel, p, o, mx, pm in [("Над 2.5", g["over_2.5"], odds["odds_o25"], odds["max_o25"], io_[0]),
                               ("Под 2.5", g["under_2.5"], odds["odds_u25"], odds["max_u25"], io_[1])]:
-        v = markets.value_bet("Голове", sel, p, o, mx, pm)
+        v = markets.value_bet("Голове", sel, p, o, mx, pm, **_vcfg(models, "OU"))
         if v:
             vb.append(v)
     if res["low_confidence"]:
@@ -127,7 +138,7 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
             print(f"  ! Недостатъчно данни за {country} ({len(hist)} мача)")
             continue
         histories.append(hist)
-        models = fit_group(hist, ref)
+        models = fit_group(hist, ref, country)
         ratings[country] = models["goals"].ratings().head(60).round(3).to_dict("records")
         fx = fixtures[fixtures["div"].isin(divs) & (fixtures["date"] >= ref) & (fixtures["date"] <= horizon)]
         fx = _add_fdorg(fx, fd_fixtures, hist, divs, ref, horizon)
