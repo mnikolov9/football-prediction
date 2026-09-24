@@ -36,10 +36,11 @@ jobs:
           key: raw-${{ github.run_id }}
           restore-keys: raw-
 
-      - name: Бектест (веднъж седмично, в понеделник)
+      - name: Настройка на модела и бектест (в понеделник или при първо пускане)
         if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 5 * * *'
         run: |
-          if [ "$(date -u +%u)" = "1" ] || [ ! -f data/backtest.json ]; then python run.py backtest; fi
+          if [ "$(date -u +%u)" = "1" ] || [ ! -f data/tuned.json ]; then python run.py tune;
+          elif [ ! -f data/backtest.json ]; then python run.py backtest; fi
 
       - name: Прогнози и сайт
         env:
@@ -51,7 +52,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add data/log data/backtest.json 2>/dev/null || true
+          git add data/log data/backtest.json data/tuned.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "Обновени прогнози $(date -u +%F)"
           git push
 
