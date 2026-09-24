@@ -188,13 +188,18 @@ function renderPerf() {
       ${t.acc_corners95 != null ? kpi("Точност корнери 9.5", pct(t.acc_corners95)) : ""}
       ${kpi("Log loss 1X2", num(t.logloss_1x2, 3))}
       ${t.bets ? kpi("Value залози", t.bets) + kpi("ROI (1 единица)", (t.roi >= 0 ? "+" : "") + num(t.roi * 100, 1) + "%", t.roi >= 0 ? "pos" : "neg") : ""}</div>`;
+    const G = Object.entries(t.by_group || {});
+    if (G.length) h += `<div class="tbl"><table><tr><th>Състезание</th><th class="n">Мачове</th><th class="n">Точност 1X2</th><th class="n">Над/под 2.5</th><th class="n">ГГ</th><th class="n">Корнери 9.5</th><th class="n">Log loss</th><th class="n">Value ROI</th></tr>
+      ${G.map(([g, r]) => `<tr><td>${esc(g)}</td><td class="n">${r.n}</td><td class="n">${pct(r.acc_1x2)}</td><td class="n">${pct(r.acc_ou25)}</td>
+        <td class="n">${pct(r.acc_btts)}</td><td class="n">${pct(r.acc_corners95)}</td><td class="n">${num(r.logloss_1x2, 3)}</td>
+        <td class="n ${r.roi >= 0 ? "pos" : "neg"}">${r.roi == null ? "–" : (r.roi >= 0 ? "+" : "") + num(r.roi * 100, 1) + "% (" + r.bets + ")"}</td></tr>`).join("")}</table></div>`;
   } else h += '<p class="empty">Статистиката се натрупва след изиграването на първите прогнозирани мачове.</p>';
 
   const rows = Object.entries(b).filter(([k]) => !k.startsWith("_"));
   h += "<h2>Бектест (мачове, които моделът не е виждал)</h2>";
   if (rows.length) {
     h += `<p style="color:var(--muted)">По-нисък log loss е по-добре. „Пазар“ е вероятността от коефициентите без маржа – еталон, който е много трудно да се бие.</p>
-    <div class="tbl"><table><tr><th>Държава</th><th class="n">Мачове</th><th class="n">Точност 1X2</th><th class="n">Над/под 2.5</th><th class="n">ГГ</th><th class="n">Корнери 9.5</th><th class="n">Log loss модел</th><th class="n">Log loss пазар</th><th class="n">Value ROI</th></tr>
+    <div class="tbl"><table><tr><th>Първенство</th><th class="n">Мачове</th><th class="n">Точност 1X2</th><th class="n">Над/под 2.5</th><th class="n">ГГ</th><th class="n">Корнери 9.5</th><th class="n">Log loss модел</th><th class="n">Log loss пазар</th><th class="n">Value ROI</th></tr>
     ${rows.map(([c, r]) => `<tr><td>${esc(c)}</td><td class="n">${r.n}</td><td class="n">${pct(r.acc_1x2)}</td><td class="n">${pct(r.acc_ou25)}</td>
       <td class="n">${pct(r.acc_btts)}</td><td class="n">${pct(r.acc_corners95)}</td><td class="n">${num(r.model_logloss, 3)}</td>
       <td class="n">${num(r.market_logloss, 3)}</td><td class="n ${r.roi >= 0 ? "pos" : "neg"}">${r.roi == null ? "–" : (r.roi >= 0 ? "+" : "") + num(r.roi * 100, 1) + "% (" + r.bets + ")"}</td></tr>`).join("")}
