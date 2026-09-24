@@ -63,15 +63,7 @@ def _settle(row) -> float | None:
     return row["odds"] - 1 if win else -1.0
 
 
-def evaluate(hist: pd.DataFrame) -> dict:
-    preds = _load(PRED_LOG)
-    if preds.empty or hist.empty:
-        return {}
-    h = hist[["date", "div", "home", "away", "hg", "ag", "hc", "ac"]].copy()
-    h["date"] = h["date"].dt.strftime("%Y-%m-%d")
-    df = preds.merge(h, on=KEY, how="inner").dropna(subset=["hg"])
-    if df.empty:
-        return {"n": 0}
+def _stats(df: pd.DataFrame, b: pd.DataFrame | None) -> dict:
     res = np.where(df.hg > df.ag, "1", np.where(df.hg == df.ag, "X", "2"))
     P = df[["p_home", "p_draw", "p_away"]].to_numpy()
     y = np.stack([res == "1", res == "X", res == "2"], 1).astype(float)
@@ -86,12 +78,34 @@ def evaluate(hist: pd.DataFrame) -> dict:
     c = df.dropna(subset=["c_over_9.5", "hc"])
     if len(c):
         out["acc_corners95"] = float(((c["c_over_9.5"] > 0.5) == (c.hc + c.ac > 9.5)).mean())
+    if b is not None and len(b):
+        out.update({"bets": int(len(b)), "profit": float(b.profit.sum()),
+                    "roi": float(b.profit.mean()), "bet_hit": float((b.profit > 0).mean())})
+    return out
+
+
+def evaluate(hist: pd.DataFrame) -> dict:
+    """Обща статистика + разбивка по състезания (ключ "by_group")."""
+    preds = _load(PRED_LOG)
+    if preds.empty or hist.empty:
+        return {}
+    h = hist[["date", "div", "home", "away", "hg", "ag", "hc", "ac"]].copy()
+    h["date"] = h["date"].dt.strftime("%Y-%m-%d")
+    df = preds.merge(h, on=KEY, how="inner").dropna(subset=["hg"])
+    if df.empty:
+        return {"n": 0}
     bets = _load(BET_LOG)
+    b = None
     if len(bets):
         b = bets.merge(h, on=KEY, how="inner")
         b["profit"] = b.apply(_settle, axis=1)
         b = b.dropna(subset=["profit"])
-        if len(b):
-            out.update({"bets": int(len(b)), "profit": float(b.profit.sum()),
-                        "roi": float(b.profit.mean()), "bet_hit": float((b.profit > 0).mean())})
+    out = _stats(df, b)
+    group = lambda d: d["div"].map(lambda x: config.DIV_NAMES.get(x, x) if x in (config.CL_CODE, config.NL_CODE)
+                                   else config.DIV_COUNTRY.get(x, x))
+    df["group"] = group(df)
+    if b is not None and len(b):
+        b["group"] = group(b)
+    out["by_group"] = {g: _stats(d, b[b["group"] == g] if b is not None and len(b) else None)
+                       for g, d in df.groupby("group")}
     return out

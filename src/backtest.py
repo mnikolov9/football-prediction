@@ -80,6 +80,39 @@ def backtest_country(hist: pd.DataFrame, test_days: int = 240, step: int = 7) ->
     return out
 
 
+def backtest_nations_league(offline: bool = False, days: int = 900, step: int = 30) -> dict | None:
+    """Walk-forward върху мачовете от Лигата на нациите (без коефициенти)."""
+    from src.models import DixonColes
+    hist, _ = data.load_internationals(offline)
+    if len(hist) < 500:
+        return None
+    end = hist["date"].max()
+    test_all = hist[(hist["div"] == config.NL_CODE) & (hist["date"] > end - pd.Timedelta(days=days))]
+    rows, t = [], test_all["date"].min()
+    while t is not None and t <= end:
+        test = test_all[(test_all["date"] >= t) & (test_all["date"] < t + pd.Timedelta(days=step))]
+        if len(test):
+            dc = DixonColes(xi=config.INTL_TIME_DECAY_XI).fit(hist[hist["date"] < t], t)
+            for _, r in test.iterrows():
+                lam, mu = dc.rates(r.home, r.away, neutral=bool(r.get("neutral", False)))
+                g = markets.goal_markets(markets.score_matrix(lam, mu, dc.rho), lam, mu)
+                rows.append({"hg": r.hg, "ag": r.ag, "ph": g["p_home"], "pd": g["p_draw"],
+                             "pa": g["p_away"], "po": g["over_2.5"], "pb": g["btts_yes"]})
+        t += pd.Timedelta(days=step)
+    if not rows:
+        return None
+    df = pd.DataFrame(rows)
+    res = np.where(df.hg > df.ag, 0, np.where(df.hg == df.ag, 1, 2))
+    y = np.eye(3)[res]
+    P = df[["ph", "pd", "pa"]].to_numpy()
+    out = {"n": len(df)}
+    out["model_logloss"], out["model_brier"] = _metrics(P, y)
+    out["acc_1x2"] = float((P.argmax(1) == res).mean())
+    out["acc_ou25"] = float(((df.po > 0.5) == (df.hg + df.ag > 2.5)).mean())
+    out["acc_btts"] = float(((df.pb > 0.5) == ((df.hg > 0) & (df.ag > 0))).mean())
+    return out
+
+
 def run(offline: bool = False) -> dict:
     results = {}
     for country, divs in config.COUNTRIES.items():
@@ -91,4 +124,9 @@ def run(offline: bool = False) -> dict:
         if r:
             results[country] = r
             print("  ", {k: round(v, 3) if isinstance(v, float) else v for k, v in r.items()})
+    print("Бектест: Лига на нациите")
+    r = backtest_nations_league(offline)
+    if r:
+        results["Лига на нациите"] = r
+        print("  ", {k: round(v, 3) if isinstance(v, float) else v for k, v in r.items()})
     return results

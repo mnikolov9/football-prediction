@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 import config
-from src import data, markets, names, teammatch
+from src import data, markets, names, odds_api, teammatch
 from src.models import DixonColes, PoissonTeamModel
 
 MIN_CORNER_ROWS = 300
@@ -128,7 +128,7 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
             continue
         histories.append(hist)
         models = fit_group(hist, ref)
-        ratings[country] = models["goals"].ratings().head(40).round(3).to_dict("records")
+        ratings[country] = models["goals"].ratings().head(60).round(3).to_dict("records")
         fx = fixtures[fixtures["div"].isin(divs) & (fixtures["date"] >= ref) & (fixtures["date"] <= horizon)]
         fx = _add_fdorg(fx, fd_fixtures, hist, divs, ref, horizon)
         for _, row in fx.iterrows():
@@ -151,11 +151,15 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
         dated = (nl_fx["date"] >= ref) & (nl_fx["date"] <= horizon)
         undated = nl_fx["date"].isna() if config.NL_SHOW_UNDATED else False
         nl_fx = nl_fx[dated | undated]
+        nl_fx = odds_api.attach(nl_fx, offline=offline)
     if len(intl_hist) >= 300:
         histories.append(intl_hist)
         dc = DixonColes(xi=config.INTL_TIME_DECAY_XI).fit(intl_hist, ref)
         models = {"goals": dc, "corners": None}
-        rt = dc.ratings().head(40).round(3)
+        # рейтинги само за европейските отбори (участниците в Лигата на нациите)
+        europe = set(names.NATIONS_BG) | set(nl_fx["home"]) | set(nl_fx["away"])
+        rt = dc.ratings()
+        rt = rt[rt["team"].isin(europe)].round(3)
         rt["team"] = rt["team"].map(names.display)
         ratings["Национални отбори"] = rt.to_dict("records")
         for _, row in nl_fx.iterrows():
