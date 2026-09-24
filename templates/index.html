@@ -124,17 +124,17 @@ function card(m) {
       `<span class="tag">Value: ${esc(v.market)} ${esc(v.selection)} @ ${num(v.odds)} (+${Math.round(v.edge * 100)}%)</span>`).join("");
   return `<div class="card">
     <div class="meta"><span>${esc(m.country)} · ${esc(m.league)}</span><span>${esc(m.time)}</span></div>
-    <div class="teams"><span>${esc(m.home)}</span><span class="xg">${num(m.xg_home, 1)} – ${num(m.xg_away, 1)}<br>xG</span><span class="a">${esc(m.away)}</span></div>
+    <div class="teams"><span>${esc(m.home_name || m.home)}</span><span class="xg">${num(m.xg_home, 1)} – ${num(m.xg_away, 1)}<br>xG</span><span class="a">${esc(m.away_name || m.away)}</span></div>
     <div class="bar">
       <div class="bh" style="flex:${m.p_home}">1 ${pct(m.p_home)}</div>
       <div class="bd" style="flex:${m.p_draw}">X ${pct(m.p_draw)}</div>
       <div class="ba" style="flex:${m.p_away}">2 ${pct(m.p_away)}</div>
     </div>
-    <div class="odds">
+    ${o.odds_h ? `<div class="odds">
       <span>${num(o.odds_h)}${mk ? " · пазар " + pct(mk[0]) : ""}</span>
       <span>${num(o.odds_d)}${mk ? " · " + pct(mk[1]) : ""}</span>
       <span>${num(o.odds_a)}${mk ? " · " + pct(mk[2]) : ""}</span>
-    </div>
+    </div>` : ""}
     <div class="mk">
       <div>Над 1.5<b>${pct(m["over_1.5"])}</b></div>
       <div>Над 2.5<b>${pct(m["over_2.5"])}</b></div>
@@ -150,7 +150,7 @@ function card(m) {
 function renderMatches() {
   const L = fLeague.value, Dy = fDay.value, T = fTeam.value.trim().toLowerCase();
   const list = D.matches.filter(m => (!L || m.div === L) && (!Dy || m.date === Dy) &&
-    (!T || (m.home + " " + m.away).toLowerCase().includes(T)));
+    (!T || (m.home + " " + m.away + " " + (m.home_name || "") + " " + (m.away_name || "")).toLowerCase().includes(T)));
   if (!list.length) { matches.innerHTML = '<p class="empty">Няма мачове по тези критерии.</p>'; return; }
   let html = "", day = null;
   for (const m of list) {
@@ -166,7 +166,7 @@ function renderValue() {
   value.innerHTML = `<p style="color:var(--muted)">Сортирани по очаквано предимство. Вероятността е смес от модела и пазара;
     залогът е по ¼ Кели като % от банката.</p><div class="tbl"><table>
     <tr><th>Дата</th><th>Мач</th><th>Пазар</th><th class="n">Коеф.</th><th class="n">Вер.</th><th class="n">Справ. коеф.</th><th class="n">Предимство</th><th class="n">Залог</th></tr>
-    ${v.map(b => `<tr><td>${esc(b.date.slice(5))} ${esc(b.time)}</td><td>${esc(b.home)} – ${esc(b.away)}<br><small style="color:var(--muted)">${esc(b.league)}</small></td>
+    ${v.map(b => `<tr><td>${esc(b.date.slice(5))} ${esc(b.time)}</td><td>${esc(b.home_name || b.home)} – ${esc(b.away_name || b.away)}<br><small style="color:var(--muted)">${esc(b.league)}</small></td>
       <td>${esc(b.market)}: <b>${esc(b.selection)}</b></td><td class="n">${num(b.odds)}</td><td class="n">${pct(b.p)}</td>
       <td class="n">${num(b.fair_odds)}</td><td class="n pos">+${Math.round(b.edge * 100)}%</td><td class="n">${num(b.stake_pct, 1)}%</td></tr>`).join("")}
   </table></div>`;
