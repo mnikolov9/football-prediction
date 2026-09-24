@@ -90,7 +90,8 @@ h2{font-size:17px;margin:22px 0 6px}
   <section id="rat" hidden></section>
 
   <p class="note">Прогнозите са статистически оценки (модел Dixon–Coles за голове и Poisson за корнери), обучени върху
-  последните сезони. Те не са гаранция за резултат. „Value“ означава, че оценената вероятност е по-висока от
+  последните сезони. Където проверката показва подобрение, очакваните голове се коригират с LightGBM според формата,
+  xG и почивката (отбелязано с „DC+GB“). Те не са гаранция за резултат. „Value“ означава, че оценената вероятност е по-висока от
   заложената в коефициента. Залагането крие риск от загуба – само за пълнолетни, залагай отговорно.</p>
 </main>
 
@@ -123,9 +124,12 @@ function card(m) {
       <div>Корн. над 10.5<b>${pct(m["c_over_10.5"])}</b></div>` : "";
   const vb = (m.value_bets || []).map(v =>
       `<span class="tag">Value: ${esc(v.market)} ${esc(v.selection)} @ ${num(v.odds)} (+${Math.round(v.edge * 100)}%)</span>`).join("");
+  const xgLabel = m.boosted
+    ? `<span title="Dixon–Coles, коригиран с LightGBM (форма, xG, почивка). Само Dixon–Coles: ${num(m.xg_home_dc, 1)} – ${num(m.xg_away_dc, 1)}">xG · DC+GB</span>`
+    : "xG";
   return `<div class="card">
     <div class="meta"><span>${esc(m.country)} · ${esc(m.league)}</span><span>${esc(m.time)}</span></div>
-    <div class="teams"><span>${esc(m.home_name || m.home)}</span><span class="xg">${num(m.xg_home, 1)} – ${num(m.xg_away, 1)}<br>xG</span><span class="a">${esc(m.away_name || m.away)}</span></div>
+    <div class="teams"><span>${esc(m.home_name || m.home)}</span><span class="xg">${num(m.xg_home, 1)} – ${num(m.xg_away, 1)}<br>${xgLabel}</span><span class="a">${esc(m.away_name || m.away)}</span></div>
     <div class="bar">
       <div class="bh" style="flex:${m.p_home}">1 ${pct(m.p_home)}</div>
       <div class="bd" style="flex:${m.p_draw}">X ${pct(m.p_draw)}</div>
@@ -198,7 +202,7 @@ function renderPerf() {
   const rows = Object.entries(b).filter(([k]) => !k.startsWith("_"));
   h += "<h2>Бектест (мачове, които моделът не е виждал)</h2>";
   if (rows.length) {
-    h += `<p style="color:var(--muted)">По-нисък log loss е по-добре. „Пазар“ е вероятността от коефициентите без маржа – еталон, който е много трудно да се бие. Value ROI тук е с настроените правила върху целия период, затова е по-оптимистичен – честната оценка е в „Настройка на модела“ по-долу.</p>
+    h += `<p style="color:var(--muted)">По-нисък log loss е по-добре. „Пазар“ е вероятността от коефициентите без маржа – еталон, който е много трудно да се бие. Value ROI тук е с настроените правила върху целия период, затова е по-оптимистичен – честната оценка е в „Настройка на модела“ по-долу. Тази таблица е за чистия Dixon–Coles; проверката на LightGBM слоя е в колоната „LightGBM“ по-долу.</p>
     <div class="tbl"><table><tr><th>Първенство</th><th class="n">Мачове</th><th class="n">Точност 1X2</th><th class="n">Над/под 2.5</th><th class="n">ГГ</th><th class="n">Корнери 9.5</th><th class="n">Log loss модел</th><th class="n">Log loss пазар</th><th class="n">Value ROI</th></tr>
     ${rows.map(([c, r]) => `<tr><td>${esc(c)}</td><td class="n">${r.n}</td><td class="n">${pct(r.acc_1x2)}</td><td class="n">${pct(r.acc_ou25)}</td>
       <td class="n">${pct(r.acc_btts)}</td><td class="n">${pct(r.acc_corners95)}</td><td class="n">${num(r.model_logloss, 3)}</td>
@@ -211,11 +215,14 @@ function renderPerf() {
     const vs = v => !v ? "–" : v.enabled
       ? `<span class="pos">вкл.</span> · ${v.valid_roi >= 0 ? "+" : ""}${num(v.valid_roi * 100, 1)}% (${v.valid_bets})`
       : `<span class="neg">изкл.</span>${v.valid_roi != null ? " · " + (v.valid_roi >= 0 ? "+" : "") + num(v.valid_roi * 100, 1) + "% (" + v.valid_bets + ")" : ""}`;
+    const bs = v => !v ? "–" : (v.enabled ? '<span class="pos">вкл.</span>' : '<span class="neg">изкл.</span>') +
+      (v.logloss_dc != null ? ` · ${num(v.logloss_dc, 3)} → ${num(v.logloss_boost, 3)} (${v.n_valid})` : (v.reason ? " · " + esc(v.reason) : ""));
     h += `<h2>Настройка на модела</h2>
-    <p style="color:var(--muted)">Параметрите се избират автоматично всяка седмица. Value правилата се избират по първата половина от бектеста и се проверяват върху втората, която моделът не е ползвал за избора. Пазар остава включен само ако печели и в двете. В колоните е ROI от проверката.</p>
-    <div class="tbl"><table><tr><th>Първенство</th><th class="n">Log loss преди</th><th class="n">Log loss сега</th><th class="n">Log loss пазар</th><th class="n">Value 1X2</th><th class="n">Value голове 2.5</th></tr>
+    <p style="color:var(--muted)">Параметрите се избират автоматично всяка седмица. Value правилата се избират по първата половина от бектеста и се проверяват върху втората, която моделът не е ползвал за избора. Пазар остава включен само ако печели и в двете. В колоните е ROI от проверката.
+    LightGBM коригира очакваните голове по форма, xG и почивка. Включва се само ако на мачовете за проверка (които не е виждал) log loss 1X2 пада спрямо чистия Dixon–Coles; в колоната е log loss преди → след и броят мачове за проверка.</p>
+    <div class="tbl"><table><tr><th>Първенство</th><th class="n">Log loss преди</th><th class="n">Log loss сега</th><th class="n">Log loss пазар</th><th class="n">Value 1X2</th><th class="n">Value голове 2.5</th><th class="n">LightGBM</th></tr>
     ${T.map(([c, r]) => `<tr><td>${esc(c)}</td><td class="n">${num(r.logloss_default, 3)}</td><td class="n"><b>${num(r.logloss, 3)}</b></td>
-      <td class="n">${num(r.logloss_market, 3)}</td><td class="n">${vs(r.value?.["1X2"])}</td><td class="n">${vs(r.value?.OU)}</td></tr>`).join("")}
+      <td class="n">${num(r.logloss_market, 3)}</td><td class="n">${vs(r.value?.["1X2"])}</td><td class="n">${vs(r.value?.OU)}</td><td class="n">${bs(r.boost)}</td></tr>`).join("")}
     </table></div>`;
   }
   perf.innerHTML = h;
