@@ -151,6 +151,7 @@ function renderMatches() {
   const L = fLeague.value, Dy = fDay.value, T = fTeam.value.trim().toLowerCase();
   const list = D.matches.filter(m => (!L || m.div === L) && (!Dy || m.date === Dy) &&
     (!T || (m.home + " " + m.away + " " + (m.home_name || "") + " " + (m.away_name || "")).toLowerCase().includes(T)));
+  if (!D.matches.length) { matches.innerHTML = '<p class="empty">В момента няма предстоящи мачове в следващите дни. Програмата с коефициенти се обновява във вторник и петък следобед.</p>'; return; }
   if (!list.length) { matches.innerHTML = '<p class="empty">Няма мачове по тези критерии.</p>'; return; }
   let html = "", day = null;
   for (const m of list) {
