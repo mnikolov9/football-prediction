@@ -41,6 +41,11 @@ class PoissonTeamModel:
         y = df[acol].to_numpy(float)
         days = (pd.Timestamp(ref_date) - df["date"]).dt.days.to_numpy(float)
         w = np.exp(-self.xi * np.clip(days, 0, None))
+        if "wt" in df:                      # допълнително тегло (напр. приятелски мачове)
+            w = w * df["wt"].fillna(1.0).to_numpy(float)
+        # 1 = има домакинско предимство, 0 = неутрален терен
+        self._hm = 1.0 - df["neutral"].fillna(False).astype(float).to_numpy() if "neutral" in df \
+            else np.ones(len(df))
         counts = pd.concat([df["home"], df["away"]]).value_counts()
         self.n_matches = counts.to_dict()
         return h, a, x, y, w
@@ -51,7 +56,7 @@ class PoissonTeamModel:
         att = dev + self._base
         home = p[2 * n]
         rho = p[2 * n + 1] if self.use_rho else 0.0
-        e1 = home + att[h] - dfn[a]
+        e1 = home * self._hm + att[h] - dfn[a]
         e2 = att[a] - dfn[h]
         lam, mu = np.exp(e1), np.exp(e2)
 
@@ -86,7 +91,7 @@ class PoissonTeamModel:
         wg1, wg2 = w * g1, w * g2
         g_att = np.bincount(h, wg1, n) + np.bincount(a, wg2, n)
         g_def = -np.bincount(a, wg1, n) - np.bincount(h, wg2, n)
-        g_home = wg1.sum()
+        g_home = (wg1 * self._hm).sum()
 
         obj = -np.sum(w * ll) + self.l2 * (dev @ dev + dfn @ dfn)
         grad = np.concatenate([

@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 import config
-from src import data, markets
+from src import data, markets, names
 from src.models import DixonColes, PoissonTeamModel
 
 MIN_CORNER_ROWS = 300
@@ -30,7 +30,8 @@ def fit_group(hist: pd.DataFrame, ref_date) -> dict:
 
 def predict_match(row: pd.Series, models: dict) -> dict:
     dc, cm = models["goals"], models["corners"]
-    lam, mu = dc.rates(row["home"], row["away"])
+    neutral = bool(row.get("neutral", False)) if pd.notna(row.get("neutral", False)) else False
+    lam, mu = dc.rates(row["home"], row["away"], neutral=neutral)
     m = markets.score_matrix(lam, mu, dc.rho)
     g = markets.goal_markets(m, lam, mu)
 
@@ -41,6 +42,7 @@ def predict_match(row: pd.Series, models: dict) -> dict:
         "league": config.DIV_NAMES.get(row["div"], row["div"]),
         "country": config.DIV_COUNTRY.get(row["div"], ""),
         "home": row["home"], "away": row["away"],
+        "home_name": names.display(row["home"]), "away_name": names.display(row["away"]),
         **g,
         "low_confidence": bool(min(dc.n_matches.get(row["home"], 0),
                                    dc.n_matches.get(row["away"], 0)) < 8),
@@ -114,9 +116,24 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
         for _, row in cl_fx.iterrows():
             matches.append(predict_match(row, models))
 
+    print("Лига на нациите...")
+    intl_hist, nl_fx = data.load_internationals(offline)
+    intl_hist = intl_hist[intl_hist["date"] < ref] if len(intl_hist) else intl_hist
+    nl_fx = nl_fx[(nl_fx["date"] >= ref) & (nl_fx["date"] <= horizon)] if len(nl_fx) else nl_fx
+    if len(intl_hist) >= 300:
+        histories.append(intl_hist)
+        dc = DixonColes(xi=config.INTL_TIME_DECAY_XI).fit(intl_hist, ref)
+        models = {"goals": dc, "corners": None}
+        rt = dc.ratings().head(40).round(3)
+        rt["team"] = rt["team"].map(names.display)
+        ratings["Национални отбори"] = rt.to_dict("records")
+        for _, row in nl_fx.iterrows():
+            matches.append(predict_match(row, models))
+        print(f"  {len(nl_fx)} предстоящи мача")
+
     matches.sort(key=lambda m: (m["date"], m["time"], m["div"]))
     value = sorted(
-        [{**v, **{k: m[k] for k in ("date", "time", "league", "home", "away")}}
+        [{**v, **{k: m[k] for k in ("date", "time", "league", "home", "away", "home_name", "away_name")}}
          for m in matches for v in m["value_bets"]],
         key=lambda v: -v["edge"])
 

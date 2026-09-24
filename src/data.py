@@ -22,6 +22,7 @@ import config
 
 FDCO_HISTORY = "https://www.football-data.co.uk/mmz4281/{season}/{div}.csv"
 FDCO_FIXTURES = "https://www.football-data.co.uk/fixtures.csv"
+INTL_RESULTS = "https://raw.githubusercontent.com/martj42/international_results/master/results.csv"
 FDORG_MATCHES = "https://api.football-data.org/v4/competitions/{code}/matches?season={year}"
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (football-predictor; personal project)"}
@@ -226,3 +227,57 @@ def load_champions_league(offline: bool = False) -> tuple[pd.DataFrame, pd.DataF
     fut = df[df["status"].isin(["SCHEDULED", "TIMED"])]
     return (hist[COLUMNS].sort_values("date").reset_index(drop=True),
             fut[COLUMNS].sort_values("date").reset_index(drop=True))
+
+
+# --------------------------------------------------------------------------- #
+# Национални отбори – Лига на нациите
+# --------------------------------------------------------------------------- #
+def load_internationals(offline: bool = False) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Връща (история на всички международни мачове, предстоящи мачове от Лигата на нациите)."""
+    path = config.RAW_DIR / "international_results.csv"
+    if not offline:
+        try:
+            raw = _http_get(INTL_RESULTS)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(raw)
+        except RuntimeError as e:
+            print(f"  ! {e}")
+    empty = pd.DataFrame(columns=COLUMNS + ["neutral", "wt"])
+    if not path.exists():
+        return empty, empty
+    df = _read_csv_bytes(path.read_bytes())
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    cutoff = pd.Timestamp.today() - pd.DateOffset(years=config.INTL_YEARS)
+    df = df[df["date"] >= cutoff].copy()
+    is_nl = df["tournament"].astype(str).str.contains("Nations League", case=False)
+    out = pd.DataFrame({
+        "date": df["date"], "time": "",
+        "div": np.where(is_nl, config.NL_CODE, "INT"),
+        "home": df["home_team"].astype(str).str.strip(),
+        "away": df["away_team"].astype(str).str.strip(),
+        "hg": pd.to_numeric(df["home_score"], errors="coerce"),
+        "ag": pd.to_numeric(df["away_score"], errors="coerce"),
+        "neutral": df["neutral"].astype(str).str.upper().eq("TRUE"),
+        "wt": np.where(df["tournament"].astype(str).eq("Friendly"), config.FRIENDLY_WEIGHT, 1.0),
+    })
+    for c in COLUMNS:
+        if c not in out:
+            out[c] = np.nan
+    hist = out.dropna(subset=["hg", "ag"])
+    # предстоящите мачове са редове без резултат
+    fut = out[out["hg"].isna() & (out["div"] == config.NL_CODE)]
+    if config.NL_MANUAL_FIXTURES.exists():
+        man = pd.read_csv(config.NL_MANUAL_FIXTURES)
+        man["date"] = pd.to_datetime(man["date"], errors="coerce")
+        man["div"] = config.NL_CODE
+        man["neutral"] = (man["neutral"].astype(str).str.upper().eq("TRUE")
+                          if "neutral" in man else False)
+        man["time"] = man["time"].fillna("").astype(str) if "time" in man else ""
+        man["wt"] = 1.0
+        for c in COLUMNS:
+            if c not in man:
+                man[c] = np.nan
+        fut = pd.concat([fut, man[fut.columns]], ignore_index=True)
+    fut = fut.dropna(subset=["date"]).drop_duplicates(["date", "home", "away"])
+    return (hist.sort_values("date").reset_index(drop=True),
+            fut.sort_values("date").reset_index(drop=True))
