@@ -167,7 +167,7 @@ function renderMatches() {
 
 function renderValue() {
   const v = D.value_bets;
-  if (!v.length) { value.innerHTML = '<p class="empty">В момента няма value залози според модела.</p>'; return; }
+  if (!v.length) { value.innerHTML = '<p class="empty">В момента няма value залози. Пазарите, които не са печелили при проверката на модела, са изключени (виж „Резултати на модела“).</p>'; return; }
   value.innerHTML = `<p style="color:var(--muted)">Сортирани по очаквано предимство. Вероятността е смес от модела и пазара;
     залогът е по ¼ Кели като % от банката.</p><div class="tbl"><table>
     <tr><th>Дата</th><th>Мач</th><th>Пазар</th><th class="n">Коеф.</th><th class="n">Вер.</th><th class="n">Справ. коеф.</th><th class="n">Предимство</th><th class="n">Залог</th></tr>
@@ -198,13 +198,26 @@ function renderPerf() {
   const rows = Object.entries(b).filter(([k]) => !k.startsWith("_"));
   h += "<h2>Бектест (мачове, които моделът не е виждал)</h2>";
   if (rows.length) {
-    h += `<p style="color:var(--muted)">По-нисък log loss е по-добре. „Пазар“ е вероятността от коефициентите без маржа – еталон, който е много трудно да се бие.</p>
+    h += `<p style="color:var(--muted)">По-нисък log loss е по-добре. „Пазар“ е вероятността от коефициентите без маржа – еталон, който е много трудно да се бие. Value ROI тук е с настроените правила върху целия период, затова е по-оптимистичен – честната оценка е в „Настройка на модела“ по-долу.</p>
     <div class="tbl"><table><tr><th>Първенство</th><th class="n">Мачове</th><th class="n">Точност 1X2</th><th class="n">Над/под 2.5</th><th class="n">ГГ</th><th class="n">Корнери 9.5</th><th class="n">Log loss модел</th><th class="n">Log loss пазар</th><th class="n">Value ROI</th></tr>
     ${rows.map(([c, r]) => `<tr><td>${esc(c)}</td><td class="n">${r.n}</td><td class="n">${pct(r.acc_1x2)}</td><td class="n">${pct(r.acc_ou25)}</td>
       <td class="n">${pct(r.acc_btts)}</td><td class="n">${pct(r.acc_corners95)}</td><td class="n">${num(r.model_logloss, 3)}</td>
       <td class="n">${num(r.market_logloss, 3)}</td><td class="n ${r.roi >= 0 ? "pos" : "neg"}">${r.roi == null ? "–" : (r.roi >= 0 ? "+" : "") + num(r.roi * 100, 1) + "% (" + r.bets + ")"}</td></tr>`).join("")}
     </table></div>`;
   } else h += '<p class="empty">Пусни <code>python run.py backtest</code>, за да се появи.</p>';
+
+  const T = Object.entries(D.tuning || {}).filter(([k]) => !k.startsWith("_"));
+  if (T.length) {
+    const vs = v => !v ? "–" : v.enabled
+      ? `<span class="pos">вкл.</span> · ${v.valid_roi >= 0 ? "+" : ""}${num(v.valid_roi * 100, 1)}% (${v.valid_bets})`
+      : `<span class="neg">изкл.</span>${v.valid_roi != null ? " · " + (v.valid_roi >= 0 ? "+" : "") + num(v.valid_roi * 100, 1) + "% (" + v.valid_bets + ")" : ""}`;
+    h += `<h2>Настройка на модела</h2>
+    <p style="color:var(--muted)">Параметрите се избират автоматично всяка седмица. Value правилата се избират по първата половина от бектеста и се проверяват върху втората, която моделът не е ползвал за избора. Пазар остава включен само ако печели и в двете. В колоните е ROI от проверката.</p>
+    <div class="tbl"><table><tr><th>Първенство</th><th class="n">Log loss преди</th><th class="n">Log loss сега</th><th class="n">Log loss пазар</th><th class="n">Value 1X2</th><th class="n">Value голове 2.5</th></tr>
+    ${T.map(([c, r]) => `<tr><td>${esc(c)}</td><td class="n">${num(r.logloss_default, 3)}</td><td class="n"><b>${num(r.logloss, 3)}</b></td>
+      <td class="n">${num(r.logloss_market, 3)}</td><td class="n">${vs(r.value?.["1X2"])}</td><td class="n">${vs(r.value?.OU)}</td></tr>`).join("")}
+    </table></div>`;
+  }
   perf.innerHTML = h;
 }
 
