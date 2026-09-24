@@ -40,7 +40,7 @@ football-data.org ───┘  (ШЛ)                                        sr
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-python run.py backtest   # еднократно: проверка на точността (~1 мин)
+python run.py tune       # еднократно: настройка на модела + бектест (~10 мин)
 python run.py all        # сваля данни, прави прогнози, генерира site/index.html
 ```
 
@@ -78,7 +78,7 @@ python scripts/make_sample_data.py && python run.py all --offline
 | `VALUE_MODEL_WEIGHT` | Тегло на модела спрямо пазара при търсене на value |
 | `VALUE_MIN_EDGE`, `VALUE_MAX_ODDS` | Филтри за value залозите |
 
-Промени параметрите и пусни `python run.py backtest`. По-нисък log loss значи по-добър модел.
+Параметрите на модела и value правилата се настройват автоматично с `python run.py tune`, всеки понеделник в GitHub Actions. За всяка държава се избират времевото тегло и регуляризацията с най-нисък log loss в бектеста. Value правилата (тегло спрямо пазара и минимално предимство) се избират по първата половина от бектеста и се проверяват върху втората. Пазар, който губи при проверката, се изключва. Резултатите се записват в `data/tuned.json` и се виждат в „Резултати на модела“. Стойностите в `config.py` се ползват само докато няма настройка.
 
 ## Важно
 

@@ -1,6 +1,7 @@
 """Команден ред.
 
   python run.py all           # сваля данни, прави прогнози, генерира сайта
+  python run.py tune          # настройка на модела и value правилата (~10 мин)
   python run.py backtest      # проверка на точността на модела върху минали мачове
   python run.py all --offline # без интернет, с вече свалените (или синтетични) данни
 """
@@ -12,7 +13,7 @@ import json
 import time
 
 import config
-from src import backtest, predict, site, tracking
+from src import backtest, params, predict, site, tracking, tuning
 
 
 def cmd_all(offline: bool):
@@ -23,6 +24,7 @@ def cmd_all(offline: bool):
     result["track_record"] = tracking.evaluate(hist)
     bt_path = config.DATA_DIR / "backtest.json"
     result["backtest"] = json.loads(bt_path.read_text("utf-8")) if bt_path.exists() else {}
+    result["tuning"] = params.load()
     site.build(result)
     print(f"Готово: {len(result['matches'])} мача, {len(result['value_bets'])} value залога "
           f"({time.time() - t0:.0f} сек). Сайтът е в {config.SITE_DIR}")
@@ -36,9 +38,15 @@ def cmd_backtest(offline: bool):
     print(f"Записано в {config.DATA_DIR / 'backtest.json'}")
 
 
+def cmd_tune(offline: bool):
+    tuning.run(offline=offline)
+    print(f"Записано в {params.TUNED}. Бектестът се обновява с новите параметри...")
+    cmd_backtest(offline)
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("command", choices=["all", "backtest"])
+    ap.add_argument("command", choices=["all", "backtest", "tune"])
     ap.add_argument("--offline", action="store_true")
     a = ap.parse_args()
-    {"all": cmd_all, "backtest": cmd_backtest}[a.command](a.offline)
+    {"all": cmd_all, "backtest": cmd_backtest, "tune": cmd_tune}[a.command](a.offline)
