@@ -32,6 +32,8 @@ def _save_merged(path, new: pd.DataFrame, today: str):
 def log_predictions(result: dict, today: str):
     rows, bets = [], []
     for m in result["matches"]:
+        if not m["date"]:
+            continue                      # мачове без дата не влизат в track record-а
         rows.append({
             **{k: m[k] for k in KEY},
             "p_home": m["p_home"], "p_draw": m["p_draw"], "p_away": m["p_away"],

@@ -268,6 +268,14 @@ def load_fdorg_fixtures(offline: bool = False) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 # Национални отбори – Лига на нациите
 # --------------------------------------------------------------------------- #
+# различни изписвания -> името в martj42/international_results
+INTL_ALIASES = {
+    "FYR Macedonia": "North Macedonia", "Macedonia": "North Macedonia",
+    "Ireland": "Republic of Ireland", "Czechia": "Czech Republic", "Türkiye": "Turkey",
+    "Turkiye": "Turkey", "Bosnia-Herzegovina": "Bosnia and Herzegovina", "Holland": "Netherlands",
+}
+
+
 def load_internationals(offline: bool = False) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Връща (история на всички международни мачове, предстоящи мачове от Лигата на нациите)."""
     path = config.RAW_DIR / "international_results.csv"
@@ -303,17 +311,26 @@ def load_internationals(offline: bool = False) -> tuple[pd.DataFrame, pd.DataFra
     # предстоящите мачове са редове без резултат
     fut = out[out["hg"].isna() & (out["div"] == config.NL_CODE)]
     if config.NL_MANUAL_FIXTURES.exists():
-        man = pd.read_csv(config.NL_MANUAL_FIXTURES)
-        man["date"] = pd.to_datetime(man["date"], errors="coerce")
+        man = pd.read_csv(config.NL_MANUAL_FIXTURES, dtype=str).dropna(subset=["home", "away"])
+        man["home"] = man["home"].str.strip().replace(INTL_ALIASES)
+        man["away"] = man["away"].str.strip().replace(INTL_ALIASES)
+        # дати като 24/09/2026 или 2026-09-24; празна дата = още не е обявена
+        man["date"] = pd.to_datetime(man.get("date"), dayfirst=True, format="mixed", errors="coerce")
         man["div"] = config.NL_CODE
         man["neutral"] = (man["neutral"].astype(str).str.upper().eq("TRUE")
                           if "neutral" in man else False)
-        man["time"] = man["time"].fillna("").astype(str) if "time" in man else ""
+        man["time"] = (man["time"].fillna("").astype(str).str.slice(0, 5)
+                       if "time" in man else "")
         man["wt"] = 1.0
         for c in COLUMNS:
             if c not in man:
                 man[c] = np.nan
+        # вече изиграните мачове (със същия домакин и гост в Лигата на нациите) отпадат
+        recent = hist[(hist["div"] == config.NL_CODE) &
+                      (hist["date"] >= pd.Timestamp.today() - pd.Timedelta(days=300))]
+        played = set(zip(recent["home"], recent["away"]))
+        man = man[~man.apply(lambda r: pd.isna(r["date"]) and (r["home"], r["away"]) in played, axis=1)]
         fut = pd.concat([fut, man[fut.columns]], ignore_index=True)
-    fut = fut.dropna(subset=["date"]).drop_duplicates(["date", "home", "away"])
+    fut = fut.drop_duplicates(["home", "away"], keep="first")
     return (hist.sort_values("date").reset_index(drop=True),
-            fut.sort_values("date").reset_index(drop=True))
+            fut.sort_values("date", na_position="last").reset_index(drop=True))

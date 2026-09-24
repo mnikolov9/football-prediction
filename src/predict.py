@@ -36,7 +36,7 @@ def predict_match(row: pd.Series, models: dict) -> dict:
     g = markets.goal_markets(m, lam, mu)
 
     res = {
-        "date": row["date"].strftime("%Y-%m-%d"),
+        "date": row["date"].strftime("%Y-%m-%d") if pd.notna(row["date"]) else None,
         "time": str(row.get("time") or ""),
         "div": row["div"],
         "league": config.DIV_NAMES.get(row["div"], row["div"]),
@@ -147,7 +147,10 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
     print("Лига на нациите...")
     intl_hist, nl_fx = data.load_internationals(offline)
     intl_hist = intl_hist[intl_hist["date"] < ref] if len(intl_hist) else intl_hist
-    nl_fx = nl_fx[(nl_fx["date"] >= ref) & (nl_fx["date"] <= horizon)] if len(nl_fx) else nl_fx
+    if len(nl_fx):
+        dated = (nl_fx["date"] >= ref) & (nl_fx["date"] <= horizon)
+        undated = nl_fx["date"].isna() if config.NL_SHOW_UNDATED else False
+        nl_fx = nl_fx[dated | undated]
     if len(intl_hist) >= 300:
         histories.append(intl_hist)
         dc = DixonColes(xi=config.INTL_TIME_DECAY_XI).fit(intl_hist, ref)
@@ -157,9 +160,9 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
         ratings["Национални отбори"] = rt.to_dict("records")
         for _, row in nl_fx.iterrows():
             matches.append(predict_match(row, models))
-        print(f"  {len(nl_fx)} предстоящи мача")
+        print(f"  {len(nl_fx)} предстоящи мача ({int(nl_fx['date'].isna().sum())} без дата)")
 
-    matches.sort(key=lambda m: (m["date"], m["time"], m["div"]))
+    matches.sort(key=lambda m: (m["date"] or "9999", m["time"], m["div"]))
     value = sorted(
         [{**v, **{k: m[k] for k in ("date", "time", "league", "home", "away", "home_name", "away_name")}}
          for m in matches for v in m["value_bets"]],
