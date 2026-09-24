@@ -44,6 +44,7 @@ jobs:
       - name: Прогнози и сайт
         env:
           FOOTBALL_DATA_ORG_KEY: ${{ secrets.FOOTBALL_DATA_ORG_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: python run.py all
 
       - name: Запис на track record-а в репото
