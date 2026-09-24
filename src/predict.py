@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 import config
-from src import data, markets, names
+from src import data, markets, names, teammatch
 from src.models import DixonColes, PoissonTeamModel
 
 MIN_CORNER_ROWS = 300
@@ -82,6 +82,32 @@ def predict_match(row: pd.Series, models: dict) -> dict:
     return res
 
 
+def _add_fdorg(fx: pd.DataFrame, fd: pd.DataFrame, hist: pd.DataFrame, divs, ref, horizon) -> pd.DataFrame:
+    """Добавя мачовете от football-data.org, които ги няма в fixtures.csv
+    (там са с коефициенти, затова имат предимство)."""
+    if fd is None or fd.empty:
+        return fx
+    fd = fd[fd["div"].isin(divs) & (fd["date"] >= ref) & (fd["date"] <= horizon)]
+    have = set(zip(fx["home"], fx["away"]))
+    latest = hist["season"].max() if "season" in hist else None
+    extra = []
+    for _, r in fd.iterrows():
+        cur = hist[(hist["div"] == r["div"]) & (hist["season"] == latest)] if latest else hist
+        cands = sorted(set(cur["home"]) | set(cur["away"])) or sorted(set(hist["home"]) | set(hist["away"]))
+        h = teammatch.match(r["home_variants"], cands)
+        a = teammatch.match(r["away_variants"], cands)
+        if not h or not a or h == a:
+            print(f"  ! Несъпоставен мач: {r['home_variants'][0]} – {r['away_variants'][0]}")
+            continue
+        if (h, a) in have:
+            continue
+        have.add((h, a))
+        extra.append({"date": r["date"], "time": r["time"], "div": r["div"], "home": h, "away": a})
+    if not extra:
+        return fx
+    return pd.concat([fx, pd.DataFrame(extra)], ignore_index=True)
+
+
 def run(offline: bool = False, today: dt.date | None = None) -> dict:
     today = today or dt.date.today()
     ref = pd.Timestamp(today)
@@ -90,6 +116,7 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
 
     print("Сваляне на програмата...")
     fixtures = data.load_fixtures(all_divs, offline)
+    fd_fixtures = data.load_fdorg_fixtures(offline)
     matches, ratings, histories = [], {}, []
 
     for country, divs in config.COUNTRIES.items():
@@ -103,6 +130,7 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
         models = fit_group(hist, ref)
         ratings[country] = models["goals"].ratings().head(40).round(3).to_dict("records")
         fx = fixtures[fixtures["div"].isin(divs) & (fixtures["date"] >= ref) & (fixtures["date"] <= horizon)]
+        fx = _add_fdorg(fx, fd_fixtures, hist, divs, ref, horizon)
         for _, row in fx.iterrows():
             matches.append(predict_match(row, models))
 

@@ -229,6 +229,42 @@ def load_champions_league(offline: bool = False) -> tuple[pd.DataFrame, pd.DataF
             fut[COLUMNS].sort_values("date").reset_index(drop=True))
 
 
+def load_fdorg_fixtures(offline: bool = False) -> pd.DataFrame:
+    """Предстоящи мачове от football-data.org за първите дивизии (без коефициенти).
+    Колоните home_variants/away_variants пазят всички варианти на имената
+    за съпоставяне с football-data.co.uk."""
+    key = os.environ.get("FOOTBALL_DATA_ORG_KEY", "").strip()
+    rows = []
+    today = dt.date.today()
+    dto = today + dt.timedelta(days=config.DAYS_AHEAD)
+    for div, code in config.FDORG_LEAGUES.items():
+        path = config.RAW_DIR / f"fdorg_fixtures_{code}.json"
+        if not offline and key:
+            url = (f"https://api.football-data.org/v4/competitions/{code}/matches"
+                   f"?dateFrom={today.isoformat()}&dateTo={dto.isoformat()}")
+            try:
+                raw = _http_get(url, headers={"X-Auth-Token": key})
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(raw)
+                time.sleep(6.5)
+            except RuntimeError as e:
+                print(f"  ! Програма {code}: {e}")
+        if not path.exists():
+            continue
+        for m in json.loads(path.read_text("utf-8")).get("matches", []):
+            if m.get("status") not in ("SCHEDULED", "TIMED"):
+                continue
+            ht, at = m.get("homeTeam") or {}, m.get("awayTeam") or {}
+            utc = pd.to_datetime(m["utcDate"])
+            rows.append({
+                "date": utc.tz_convert(None).normalize(), "time": utc.strftime("%H:%M") + " UTC",
+                "div": div,
+                "home_variants": [ht.get("shortName"), ht.get("name"), ht.get("tla")],
+                "away_variants": [at.get("shortName"), at.get("name"), at.get("tla")],
+            })
+    return pd.DataFrame(rows)
+
+
 # --------------------------------------------------------------------------- #
 # Национални отбори – Лига на нациите
 # --------------------------------------------------------------------------- #
