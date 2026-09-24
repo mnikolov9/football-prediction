@@ -1,0 +1,68 @@
+name: Ежедневни прогнози
+
+on:
+  schedule:
+    - cron: "0 5 * * *"      # всеки ден в 05:00 UTC (08:00 българско лятно време)
+    - cron: "0 11 * * 5,6"   # допълнително в петък и събота – по-пресни коефициенти
+  workflow_dispatch:          # ръчно пускане от таб Actions
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: predictions
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # кеш на свалените сезони, за да не се теглят всеки път
+      - uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: raw-${{ github.run_id }}
+          restore-keys: raw-
+
+      - name: Бектест (веднъж седмично, в понеделник)
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 5 * * *'
+        run: |
+          if [ "$(date -u +%u)" = "1" ] || [ ! -f data/backtest.json ]; then python run.py backtest; fi
+
+      - name: Прогнози и сайт
+        env:
+          FOOTBALL_DATA_ORG_KEY: ${{ secrets.FOOTBALL_DATA_ORG_KEY }}
+        run: python run.py all
+
+      - name: Запис на track record-а в репото
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add data/log data/backtest.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "Обновени прогнози $(date -u +%F)"
+          git push
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

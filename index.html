@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Футболни прогнози</title>
+<meta name="description" content="Статистически прогнози за футболни мачове: 1X2, голове, точен резултат, корнери и value залози.">
+<style>
+:root{
+  --bg:#f6f7f9;--card:#fff;--ink:#16181d;--muted:#667085;--line:#e4e7ec;
+  --accent:#1a7f5a;--accent-soft:#e3f4ec;--home:#2563eb;--draw:#98a2b3;--away:#dc6803;
+  --warn:#b54708;--warn-soft:#fef0c7;--radius:12px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1115;--card:#171a21;--ink:#e8eaed;--muted:#98a2b3;--line:#2a2f3a;
+  --accent:#3ccf91;--accent-soft:#12372a;--home:#5b8def;--draw:#667085;--away:#f38744;
+  --warn:#fdb022;--warn-soft:#3a2a0a;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 6px}
+h1{font-size:20px;margin:0;letter-spacing:-.01em}
+.upd{color:var(--muted);font-size:13px}
+nav{display:flex;gap:4px;overflow-x:auto}
+nav button{border:0;background:none;color:var(--muted);padding:10px 12px;font:inherit;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.on{color:var(--ink);border-color:var(--accent)}
+main.wrap{padding-top:18px;padding-bottom:40px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+select,input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+input{flex:1;min-width:160px}
+.day{font-weight:700;margin:22px 0 8px;color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:8px}
+.teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;font-weight:700}
+.teams .a{text-align:right}
+.xg{color:var(--muted);font-weight:500;font-size:12px;text-align:center}
+.bar{display:flex;height:26px;border-radius:7px;overflow:hidden;margin:12px 0 4px;font-size:12px;font-weight:700;color:#fff}
+.bar div{display:flex;align-items:center;justify-content:center;min-width:28px}
+.bh{background:var(--home)}.bd{background:var(--draw)}.ba{background:var(--away)}
+.odds{display:grid;grid-template-columns:repeat(3,1fr);font-size:12px;color:var(--muted);text-align:center}
+.mk{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.mk div{background:var(--bg);border-radius:8px;padding:6px;text-align:center;font-size:12px;color:var(--muted)}
+.mk b{display:block;color:var(--ink);font-size:14px}
+.scores{margin-top:10px;font-size:12px;color:var(--muted)}
+.scores span{display:inline-block;background:var(--bg);border-radius:6px;padding:2px 7px;margin:2px 3px 0 0;color:var(--ink)}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;margin:10px 6px 0 0;background:var(--accent-soft);color:var(--accent)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;font-size:14px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:10px 0 18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+.kpi small{color:var(--muted)}.kpi b{display:block;font-size:22px;margin-top:2px}
+.pos{color:var(--accent)}.neg{color:var(--away)}
+.empty{color:var(--muted);padding:30px 0;text-align:center}
+.note{color:var(--muted);font-size:13px;margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
+h2{font-size:17px;margin:22px 0 6px}
+@media (max-width:420px){.grid{grid-template-columns:1fr}.mk{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top"><h1>Футболни прогнози</h1><span class="upd">Обновено: {{ generated }}</span></div>
+  <nav id="tabs">
+    <button data-t="pred" class="on">Прогнози</button>
+    <button data-t="value">Value залози</button>
+    <button data-t="perf">Резултати на модела</button>
+    <button data-t="rat">Рейтинги</button>
+  </nav>
+</div></header>
+
+<main class="wrap">
+  <section id="pred">
+    <div class="filters">
+      <select id="fLeague"><option value="">Всички първенства</option></select>
+      <select id="fDay"><option value="">Всички дни</option></select>
+      <input id="fTeam" placeholder="Търси отбор…">
+    </div>
+    <div id="matches"></div>
+  </section>
+  <section id="value" hidden></section>
+  <section id="perf" hidden></section>
+  <section id="rat" hidden></section>
+
+  <p class="note">Прогнозите са статистически оценки (модел Dixon–Coles за голове и Poisson за корнери), обучени върху
+  последните сезони. Те не са гаранция за резултат. „Value“ означава, че оценената вероятност е по-висока от
+  заложената в коефициента. Залагането крие риск от загуба – само за пълнолетни, залагай отговорно.</p>
+</main>
+
+<script>
+const D = {{ data_json|safe }};
+const pct = p => p == null ? "–" : Math.round(p * 100) + "%";
+const num = (v, d = 2) => v == null ? "–" : Number(v).toFixed(d);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const DAYS = ["нед", "пон", "вт", "ср", "чет", "пет", "съб"];
+const fmtDay = d => { const x = new Date(d + "T12:00:00"); return `${DAYS[x.getDay()]}, ${x.toLocaleDateString("bg-BG", {day:"numeric", month:"long"})}`; };
+
+// ---- табове
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("main > section").forEach(s => s.hidden = s.id !== b.dataset.t);
+});
+
+// ---- филтри
+const leagues = [...new Map(D.matches.map(m => [m.div, `${m.country} – ${m.league}`])).entries()];
+leagues.forEach(([k, v]) => fLeague.add(new Option(v, k)));
+[...new Set(D.matches.map(m => m.date))].forEach(d => fDay.add(new Option(fmtDay(d), d)));
+[fLeague, fDay, fTeam].forEach(el => el.oninput = renderMatches);
+
+function card(m) {
+  const o = m.odds || {}, mk = m.market_1x2;
+  const corners = m.xc_total != null ? `
+      <div>Корнери<b>${num(m.xc_total, 1)}</b></div>
+      <div>Корн. над 8.5<b>${pct(m["c_over_8.5"])}</b></div>
+      <div>Корн. над 9.5<b>${pct(m["c_over_9.5"])}</b></div>
+      <div>Корн. над 10.5<b>${pct(m["c_over_10.5"])}</b></div>` : "";
+  const vb = (m.value_bets || []).map(v =>
+      `<span class="tag">Value: ${esc(v.market)} ${esc(v.selection)} @ ${num(v.odds)} (+${Math.round(v.edge * 100)}%)</span>`).join("");
+  return `<div class="card">
+    <div class="meta"><span>${esc(m.country)} · ${esc(m.league)}</span><span>${esc(m.time)}</span></div>
+    <div class="teams"><span>${esc(m.home)}</span><span class="xg">${num(m.xg_home, 1)} – ${num(m.xg_away, 1)}<br>xG</span><span class="a">${esc(m.away)}</span></div>
+    <div class="bar">
+      <div class="bh" style="flex:${m.p_home}">1 ${pct(m.p_home)}</div>
+      <div class="bd" style="flex:${m.p_draw}">X ${pct(m.p_draw)}</div>
+      <div class="ba" style="flex:${m.p_away}">2 ${pct(m.p_away)}</div>
+    </div>
+    <div class="odds">
+      <span>${num(o.odds_h)}${mk ? " · пазар " + pct(mk[0]) : ""}</span>
+      <span>${num(o.odds_d)}${mk ? " · " + pct(mk[1]) : ""}</span>
+      <span>${num(o.odds_a)}${mk ? " · " + pct(mk[2]) : ""}</span>
+    </div>
+    <div class="mk">
+      <div>Над 1.5<b>${pct(m["over_1.5"])}</b></div>
+      <div>Над 2.5<b>${pct(m["over_2.5"])}</b></div>
+      <div>Над 3.5<b>${pct(m["over_3.5"])}</b></div>
+      <div>ГГ<b>${pct(m.btts_yes)}</b></div>
+      ${corners}
+    </div>
+    <div class="scores">Точен резултат: ${m.top_scores.slice(0, 5).map(s => `<span>${s.score} · ${pct(s.p)}</span>`).join("")}</div>
+    ${vb}${m.low_confidence ? '<span class="tag warn">Малко данни за отборите</span>' : ""}
+  </div>`;
+}
+
+function renderMatches() {
+  const L = fLeague.value, Dy = fDay.value, T = fTeam.value.trim().toLowerCase();
+  const list = D.matches.filter(m => (!L || m.div === L) && (!Dy || m.date === Dy) &&
+    (!T || (m.home + " " + m.away).toLowerCase().includes(T)));
+  if (!list.length) { matches.innerHTML = '<p class="empty">Няма мачове по тези критерии.</p>'; return; }
+  let html = "", day = null;
+  for (const m of list) {
+    if (m.date !== day) { if (day) html += "</div>"; day = m.date; html += `<div class="day">${fmtDay(day)}</div><div class="grid">`; }
+    html += card(m);
+  }
+  matches.innerHTML = html + "</div>";
+}
+
+function renderValue() {
+  const v = D.value_bets;
+  if (!v.length) { value.innerHTML = '<p class="empty">В момента няма value залози според модела.</p>'; return; }
+  value.innerHTML = `<p style="color:var(--muted)">Сортирани по очаквано предимство. Вероятността е смес от модела и пазара;
+    залогът е по ¼ Кели като % от банката.</p><div class="tbl"><table>
+    <tr><th>Дата</th><th>Мач</th><th>Пазар</th><th class="n">Коеф.</th><th class="n">Вер.</th><th class="n">Справ. коеф.</th><th class="n">Предимство</th><th class="n">Залог</th></tr>
+    ${v.map(b => `<tr><td>${esc(b.date.slice(5))} ${esc(b.time)}</td><td>${esc(b.home)} – ${esc(b.away)}<br><small style="color:var(--muted)">${esc(b.league)}</small></td>
+      <td>${esc(b.market)}: <b>${esc(b.selection)}</b></td><td class="n">${num(b.odds)}</td><td class="n">${pct(b.p)}</td>
+      <td class="n">${num(b.fair_odds)}</td><td class="n pos">+${Math.round(b.edge * 100)}%</td><td class="n">${num(b.stake_pct, 1)}%</td></tr>`).join("")}
+  </table></div>`;
+}
+
+function kpi(label, val, cls = "") { return `<div class="kpi"><small>${label}</small><b class="${cls}">${val}</b></div>`; }
+
+function renderPerf() {
+  const t = D.track_record || {}, b = D.backtest || {};
+  let h = "<h2>Реални прогнози от сайта</h2>";
+  if (t.n) {
+    h += `<div class="kpis">${kpi("Оценени мачове", t.n)}${kpi("Точност 1X2", pct(t.acc_1x2))}
+      ${kpi("Точност над/под 2.5", pct(t.acc_ou25))}${kpi("Точност ГГ", pct(t.acc_btts))}
+      ${t.acc_corners95 != null ? kpi("Точност корнери 9.5", pct(t.acc_corners95)) : ""}
+      ${kpi("Log loss 1X2", num(t.logloss_1x2, 3))}
+      ${t.bets ? kpi("Value залози", t.bets) + kpi("ROI (1 единица)", (t.roi >= 0 ? "+" : "") + num(t.roi * 100, 1) + "%", t.roi >= 0 ? "pos" : "neg") : ""}</div>`;
+  } else h += '<p class="empty">Статистиката се натрупва след изиграването на първите прогнозирани мачове.</p>';
+
+  const rows = Object.entries(b).filter(([k]) => !k.startsWith("_"));
+  h += "<h2>Бектест (мачове, които моделът не е виждал)</h2>";
+  if (rows.length) {
+    h += `<p style="color:var(--muted)">По-нисък log loss е по-добре. „Пазар“ е вероятността от коефициентите без маржа – еталон, който е много трудно да се бие.</p>
+    <div class="tbl"><table><tr><th>Държава</th><th class="n">Мачове</th><th class="n">Точност 1X2</th><th class="n">Над/под 2.5</th><th class="n">ГГ</th><th class="n">Корнери 9.5</th><th class="n">Log loss модел</th><th class="n">Log loss пазар</th><th class="n">Value ROI</th></tr>
+    ${rows.map(([c, r]) => `<tr><td>${esc(c)}</td><td class="n">${r.n}</td><td class="n">${pct(r.acc_1x2)}</td><td class="n">${pct(r.acc_ou25)}</td>
+      <td class="n">${pct(r.acc_btts)}</td><td class="n">${pct(r.acc_corners95)}</td><td class="n">${num(r.model_logloss, 3)}</td>
+      <td class="n">${num(r.market_logloss, 3)}</td><td class="n ${r.roi >= 0 ? "pos" : "neg"}">${r.roi == null ? "–" : (r.roi >= 0 ? "+" : "") + num(r.roi * 100, 1) + "% (" + r.bets + ")"}</td></tr>`).join("")}
+    </table></div>`;
+  } else h += '<p class="empty">Пусни <code>python run.py backtest</code>, за да се появи.</p>';
+  perf.innerHTML = h;
+}
+
+function renderRatings() {
+  const R = D.ratings || {};
+  rat.innerHTML = `<p style="color:var(--muted)">Сила = атака + защита (логаритмична скала, спрямо средното за държавата във всички дивизии).</p>` +
+    Object.entries(R).map(([c, list]) => `<h2>${esc(c)}</h2><div class="tbl"><table>
+    <tr><th>#</th><th>Отбор</th><th class="n">Атака</th><th class="n">Защита</th><th class="n">Сила</th><th class="n">Мачове</th></tr>
+    ${list.slice(0, 20).map((t, i) => `<tr><td>${i + 1}</td><td>${esc(t.team)}</td><td class="n">${num(t.attack)}</td><td class="n">${num(t.defence)}</td><td class="n"><b>${num(t.strength)}</b></td><td class="n">${t.matches}</td></tr>`).join("")}
+    </table></div>`).join("");
+}
+
+renderMatches(); renderValue(); renderPerf(); renderRatings();
+</script>
+</body>
+</html>
