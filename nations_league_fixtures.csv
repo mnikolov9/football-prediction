@@ -1,157 +1,157 @@
 date,time,home,away,neutral
-24/09/2026,21:45,Andorra,Malta,FALSE
-24/09/2026,21:45:00,Serbia,Greece,FALSE
-24/09/2026,21:45:00,Kosovo,Republic of Ireland,FALSE
-24/09/2026,21:45:00,Liechtenstein,Lithuania,FALSE
-24/09/2026,21:45:00,Portugal,Wales,FALSE
-24/09/2026,21:45:00,Norway,Denmark,FALSE
-,,Austria,Israel,FALSE
-,,Netherlands,Germany,FALSE
-,,Georgia,Northern Ireland,FALSE
-,,Armenia,Latvia,FALSE
-,,Hungary,Ukraine,FALSE
-,,Turkey,France,FALSE
-,,Italy,Belgium,FALSE
-,,Poland,Bosnia and Herzegovina,FALSE
-,,Sweden,Romania,FALSE
-,,Montenegro,Cyprus,FALSE
-,,Slovenia,Scotland,FALSE
-,,San Marino,Finland,FALSE
-,,Faroe Islands,Kazakhstan,FALSE
-,,Iceland,Estonia,FALSE
-,,Bulgaria,Luxembourg,FALSE
-,,FYR Macedonia,Switzerland,FALSE
-,,Albania,Belarus,FALSE
-,,England,Spain,FALSE
-,,Czech Republic,Croatia,FALSE
-,,Slovakia,Moldova,FALSE
-,,Lithuania,Azerbaijan,FALSE
-,,Denmark,Wales,FALSE
-,,Serbia,Netherlands,FALSE
-,,Austria,Kosovo,FALSE
-,,Gibraltar,Andorra,FALSE
-,,Norway,Portugal,FALSE
-,,Germany,Greece,FALSE
-,,Israel,Republic of Ireland,FALSE
-,,Georgia,Ukraine,FALSE
-,,Armenia,Montenegro,FALSE
-,,Latvia,Cyprus,FALSE
-,,Romania,Bosnia and Herzegovina,FALSE
-,,Turkey,Italy,FALSE
-,,Belgium,France,FALSE
-,,Sweden,Poland,FALSE
-,,Northern Ireland,Hungary,FALSE
-,,Moldova,Faroe Islands,FALSE
-,,Finland,Belarus,FALSE
-,,Czech Republic,England,FALSE
-,,Spain,Croatia,FALSE
-,,Scotland,Switzerland,FALSE
-,,Slovenia,FYR Macedonia,FALSE
-,,Bulgaria,Estonia,FALSE
-,,San Marino,Albania,FALSE
-,,Slovakia,Kazakhstan,FALSE
-,,Luxembourg,Iceland,FALSE
-,,Azerbaijan,Liechtenstein,FALSE
-,,Republic of Ireland,Austria,FALSE
-,,Wales,Norway,FALSE
-,,Israel,Kosovo,FALSE
-,,Denmark,Portugal,FALSE
-,,Greece,Netherlands,FALSE
-,,Germany,Serbia,FALSE
-,,Malta,Gibraltar,FALSE
-,,Kazakhstan,Moldova,FALSE
-,,Cyprus,Armenia,FALSE
-,,Latvia,Montenegro,FALSE
-,,France,Italy,FALSE
-,,Belgium,Turkey,FALSE
-,,Poland,Romania,FALSE
-,,Hungary,Georgia,FALSE
-,,Bosnia and Herzegovina,Sweden,FALSE
-,,Ukraine,Northern Ireland,FALSE
-,,Faroe Islands,Slovakia,FALSE
-,,Finland,Albania,FALSE
-,,Croatia,England,FALSE
-,,Iceland,Bulgaria,FALSE
-,,Belarus,San Marino,FALSE
-,,Estonia,Luxembourg,FALSE
-,,Spain,Czech Republic,FALSE
-,,Switzerland,Slovenia,FALSE
-,,FYR Macedonia,Scotland,FALSE
-,,Azerbaijan,Lithuania,FALSE
-,,Kosovo,Austria,FALSE
-,,Malta,Andorra,FALSE
-,,Wales,Denmark,FALSE
-,,Greece,Germany,FALSE
-,,Portugal,Norway,FALSE
-,,Netherlands,Serbia,FALSE
-,,Republic of Ireland,Israel,FALSE
-,,Cyprus,Latvia,FALSE
-,,France,Belgium,FALSE
-,,Romania,Sweden,FALSE
-,,Northern Ireland,Georgia,FALSE
-,,Ukraine,Hungary,FALSE
-,,Montenegro,Armenia,FALSE
-,,Italy,Turkey,FALSE
-,,Bosnia and Herzegovina,Poland,FALSE
-,,Kazakhstan,Faroe Islands,FALSE
-,,Croatia,Spain,FALSE
-,,Scotland,Slovenia,FALSE
-,,Switzerland,FYR Macedonia,FALSE
-,,Estonia,Iceland,FALSE
-,,Moldova,Slovakia,FALSE
-,,Belarus,Finland,FALSE
-,,Albania,San Marino,FALSE
-,,England,Czech Republic,FALSE
-,,Luxembourg,Bulgaria,FALSE
-,,Armenia,Cyprus,FALSE
-,,Turkey,Belgium,FALSE
-,,Italy,France,FALSE
-,,Albania,Finland,FALSE
-,,England,Croatia,FALSE
-,,Czech Republic,Spain,FALSE
-,,San Marino,Belarus,FALSE
-,,Montenegro,Latvia,FALSE
-,,Moldova,Kazakhstan,FALSE
-,,Serbia,Germany,FALSE
-,,Bulgaria,Iceland,FALSE
-,,Netherlands,Greece,FALSE
-,,Slovenia,Switzerland,FALSE
-,,Liechtenstein,Azerbaijan,FALSE
-,,Scotland,FYR Macedonia,FALSE
-,,Slovakia,Faroe Islands,FALSE
-,,Luxembourg,Estonia,FALSE
-,,Andorra,Gibraltar,FALSE
-,,Kosovo,Israel,FALSE
-,,Norway,Wales,FALSE
-,,Georgia,Hungary,FALSE
-,,Portugal,Denmark,FALSE
-,,Northern Ireland,Ukraine,FALSE
-,,Sweden,Bosnia and Herzegovina,FALSE
-,,Austria,Republic of Ireland,FALSE
-,,Romania,Poland,FALSE
-,,Cyprus,Montenegro,FALSE
-,,Latvia,Armenia,FALSE
-,,Belarus,Albania,FALSE
-,,Finland,San Marino,FALSE
-,,Spain,England,FALSE
-,,Belgium,Italy,FALSE
-,,Croatia,Czech Republic,FALSE
-,,France,Turkey,FALSE
-,,Faroe Islands,Moldova,FALSE
-,,Kazakhstan,Slovakia,FALSE
-,,Estonia,Bulgaria,FALSE
-,,Lithuania,Liechtenstein,FALSE
-,,Iceland,Luxembourg,FALSE
-,,Greece,Serbia,FALSE
-,,FYR Macedonia,Slovenia,FALSE
-,,Germany,Netherlands,FALSE
-,,Switzerland,Scotland,FALSE
-,,Gibraltar,Malta,FALSE
-,,Denmark,Norway,FALSE
-,,Poland,Sweden,FALSE
-,,Republic of Ireland,Kosovo,FALSE
-,,Wales,Portugal,FALSE
-,,Ukraine,Georgia,FALSE
-,,Bosnia and Herzegovina,Romania,FALSE
-,,Israel,Austria,FALSE
-,,Hungary,Northern Ireland,FALSE
+24/09/2026,19:00,Andorra,Malta,FALSE
+24/09/2026,21:45,Serbia,Greece,FALSE
+24/09/2026,21:45,Kosovo,Republic of Ireland,FALSE
+24/09/2026,21:45,Liechtenstein,Lithuania,FALSE
+24/09/2026,21:45,Portugal,Wales,FALSE
+24/09/2026,21:45,Norway,Denmark,FALSE
+24/09/2026,21:45,Austria,Israel,FALSE
+24/09/2026,21:45,Netherlands,Germany,FALSE
+25/09/2026,19:00,Georgia,Northern Ireland,FALSE
+25/09/2026,19:00,Armenia,Latvia,FALSE
+25/09/2026,21:45,Hungary,Ukraine,FALSE
+25/09/2026,21:45,Turkey,France,FALSE
+25/09/2026,21:45,Italy,Belgium,FALSE
+25/09/2026,21:45,Poland,Bosnia and Herzegovina,FALSE
+25/09/2026,21:45,Sweden,Romania,FALSE
+25/09/2026,21:45,Montenegro,Cyprus,FALSE
+26/09/2026,16:00,Slovenia,Scotland,FALSE
+26/09/2026,19:00,San Marino,Finland,FALSE
+26/09/2026,19:00,Faroe Islands,Kazakhstan,FALSE
+26/09/2026,19:00,Iceland,Estonia,FALSE
+26/09/2026,19:00,Bulgaria,Luxembourg,FALSE
+26/09/2026,21:45,FYR Macedonia,Switzerland,FALSE
+26/09/2026,21:45,Albania,Belarus,FALSE
+26/09/2026,21:45,England,Spain,FALSE
+26/09/2026,21:45,Czech Republic,Croatia,FALSE
+26/09/2026,21:45,Slovakia,Moldova,FALSE
+27/09/2026,16:00,Lithuania,Azerbaijan,FALSE
+27/09/2026,19:00,Denmark,Wales,FALSE
+27/09/2026,19:00,Serbia,Netherlands,FALSE
+27/09/2026,19:00,Austria,Kosovo,FALSE
+27/09/2026,19:00,Gibraltar,Andorra,FALSE
+27/09/2026,21:45,Norway,Portugal,FALSE
+27/09/2026,21:45,Germany,Greece,FALSE
+27/09/2026,21:45,Israel,Republic of Ireland,FALSE
+28/09/2026,19:00,Georgia,Ukraine,FALSE
+28/09/2026,19:00,Armenia,Montenegro,FALSE
+28/09/2026,19:00,Latvia,Cyprus,FALSE
+28/09/2026,21:45,Romania,Bosnia and Herzegovina,FALSE
+28/09/2026,21:45,Turkey,Italy,FALSE
+28/09/2026,21:45,Belgium,France,FALSE
+28/09/2026,21:45,Sweden,Poland,FALSE
+28/09/2026,21:45,Northern Ireland,Hungary,FALSE
+29/09/2026,19:00,Moldova,Faroe Islands,FALSE
+29/09/2026,19:00,Finland,Belarus,FALSE
+29/09/2026,21:45,Czech Republic,England,FALSE
+29/09/2026,21:45,Spain,Croatia,FALSE
+29/09/2026,21:45,Scotland,Switzerland,FALSE
+29/09/2026,21:45,Slovenia,FYR Macedonia,FALSE
+29/09/2026,21:45,Bulgaria,Estonia,FALSE
+29/09/2026,21:45,San Marino,Albania,FALSE
+29/09/2026,21:45,Slovakia,Kazakhstan,FALSE
+29/09/2026,21:45,Luxembourg,Iceland,FALSE
+01/10/2026,19:00,Azerbaijan,Liechtenstein,FALSE
+01/10/2026,21:45,Republic of Ireland,Austria,FALSE
+01/10/2026,21:45,Wales,Norway,FALSE
+01/10/2026,21:45,Israel,Kosovo,FALSE
+01/10/2026,21:45,Denmark,Portugal,FALSE
+01/10/2026,21:45,Greece,Netherlands,FALSE
+01/10/2026,21:45,Germany,Serbia,FALSE
+01/10/2026,21:45,Malta,Gibraltar,FALSE
+02/10/2026,17:00,Kazakhstan,Moldova,FALSE
+02/10/2026,19:00,Cyprus,Armenia,FALSE
+02/10/2026,21:45,Latvia,Montenegro,FALSE
+02/10/2026,21:45,France,Italy,FALSE
+02/10/2026,21:45,Belgium,Turkey,FALSE
+02/10/2026,21:45,Poland,Romania,FALSE
+02/10/2026,21:45,Hungary,Georgia,FALSE
+02/10/2026,21:45,Bosnia and Herzegovina,Sweden,FALSE
+02/10/2026,21:45,Ukraine,Northern Ireland,FALSE
+02/10/2026,21:45,Faroe Islands,Slovakia,FALSE
+03/10/2026,16:00,Finland,Albania,FALSE
+03/10/2026,19:00,Croatia,England,FALSE
+03/10/2026,19:00,Iceland,Bulgaria,FALSE
+03/10/2026,19:00,Belarus,San Marino,FALSE
+03/10/2026,19:00,Estonia,Luxembourg,FALSE
+03/10/2026,21:45,Spain,Czech Republic,FALSE
+03/10/2026,21:45,Switzerland,Slovenia,FALSE
+03/10/2026,21:45,FYR Macedonia,Scotland,FALSE
+04/10/2026,16:00,Azerbaijan,Lithuania,FALSE
+04/10/2026,19:00,Kosovo,Austria,FALSE
+04/10/2026,19:00,Malta,Andorra,FALSE
+04/10/2026,21:45,Wales,Denmark,FALSE
+04/10/2026,21:45,Greece,Germany,FALSE
+04/10/2026,21:45,Portugal,Norway,FALSE
+04/10/2026,21:45,Netherlands,Serbia,FALSE
+04/10/2026,21:45,Republic of Ireland,Israel,FALSE
+05/10/2026,19:00,Cyprus,Latvia,FALSE
+05/10/2026,21:45,France,Belgium,FALSE
+05/10/2026,21:45,Romania,Sweden,FALSE
+05/10/2026,21:45,Northern Ireland,Georgia,FALSE
+05/10/2026,21:45,Ukraine,Hungary,FALSE
+05/10/2026,21:45,Montenegro,Armenia,FALSE
+05/10/2026,21:45,Italy,Turkey,FALSE
+05/10/2026,21:45,Bosnia and Herzegovina,Poland,FALSE
+06/10/2026,17:00,Kazakhstan,Faroe Islands,FALSE
+06/10/2026,21:45,Croatia,Spain,FALSE
+06/10/2026,21:45,Scotland,Slovenia,FALSE
+06/10/2026,21:45,Switzerland,FYR Macedonia,FALSE
+06/10/2026,21:45,Estonia,Iceland,FALSE
+06/10/2026,21:45,Moldova,Slovakia,FALSE
+06/10/2026,21:45,Belarus,Finland,FALSE
+06/10/2026,21:45,Albania,San Marino,FALSE
+06/10/2026,21:45,England,Czech Republic,FALSE
+06/10/2026,21:45,Luxembourg,Bulgaria,FALSE
+12/11/2026,19:00,Armenia,Cyprus,FALSE
+12/11/2026,19:00,Turkey,Belgium,FALSE
+12/11/2026,21:45,Italy,France,FALSE
+12/11/2026,21:45,Albania,Finland,FALSE
+12/11/2026,21:45,England,Croatia,FALSE
+12/11/2026,21:45,Czech Republic,Spain,FALSE
+12/11/2026,21:45,San Marino,Belarus,FALSE
+12/11/2026,21:45,Montenegro,Latvia,FALSE
+13/11/2026,19:00,Moldova,Kazakhstan,FALSE
+13/11/2026,21:45,Serbia,Germany,FALSE
+13/11/2026,21:45,Bulgaria,Iceland,FALSE
+13/11/2026,21:45,Netherlands,Greece,FALSE
+13/11/2026,21:45,Slovenia,Switzerland,FALSE
+13/11/2026,21:45,Liechtenstein,Azerbaijan,FALSE
+13/11/2026,21:45,Scotland,FYR Macedonia,FALSE
+13/11/2026,21:45,Slovakia,Faroe Islands,FALSE
+13/11/2026,21:45,Luxembourg,Estonia,FALSE
+13/11/2026,21:45,Andorra,Gibraltar,FALSE
+14/11/2026,16:00,Kosovo,Israel,FALSE
+14/11/2026,19:00,Norway,Wales,FALSE
+14/11/2026,19:00,Georgia,Hungary,FALSE
+14/11/2026,21:45,Portugal,Denmark,FALSE
+14/11/2026,21:45,Northern Ireland,Ukraine,FALSE
+14/11/2026,21:45,Sweden,Bosnia and Herzegovina,FALSE
+14/11/2026,21:45,Austria,Republic of Ireland,FALSE
+14/11/2026,21:45,Romania,Poland,FALSE
+15/11/2026,16:00,Cyprus,Montenegro,FALSE
+15/11/2026,16:00,Latvia,Armenia,FALSE
+15/11/2026,19:00,Belarus,Albania,FALSE
+15/11/2026,19:00,Finland,San Marino,FALSE
+15/11/2026,21:45,Spain,England,FALSE
+15/11/2026,21:45,Belgium,Italy,FALSE
+15/11/2026,21:45,Croatia,Czech Republic,FALSE
+15/11/2026,21:45,France,Turkey,FALSE
+16/11/2026,17:00,Faroe Islands,Moldova,FALSE
+16/11/2026,17:00,Kazakhstan,Slovakia,FALSE
+16/11/2026,19:00,Estonia,Bulgaria,FALSE
+16/11/2026,19:00,Lithuania,Liechtenstein,FALSE
+16/11/2026,19:00,Iceland,Luxembourg,FALSE
+16/11/2026,21:45,Greece,Serbia,FALSE
+16/11/2026,21:45,FYR Macedonia,Slovenia,FALSE
+16/11/2026,21:45,Germany,Netherlands,FALSE
+16/11/2026,21:45,Switzerland,Scotland,FALSE
+16/11/2026,21:45,Gibraltar,Malta,FALSE
+17/11/2026,21:45,Denmark,Norway,FALSE
+17/11/2026,21:45,Poland,Sweden,FALSE
+17/11/2026,21:45,Republic of Ireland,Kosovo,FALSE
+17/11/2026,21:45,Wales,Portugal,FALSE
+17/11/2026,21:45,Ukraine,Georgia,FALSE
+17/11/2026,21:45,Bosnia and Herzegovina,Romania,FALSE
+17/11/2026,21:45,Israel,Austria,FALSE
+17/11/2026,21:45,Hungary,Northern Ireland,FALSE
