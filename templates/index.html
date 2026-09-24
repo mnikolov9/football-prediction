@@ -59,6 +59,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .kpi small{color:var(--muted)}.kpi b{display:block;font-size:22px;margin-top:2px}
 .pos{color:var(--accent)}.neg{color:var(--away)}
 .empty{color:var(--muted);padding:30px 0;text-align:center}
+.undated summary{list-style:revert;cursor:pointer}
 .note{color:var(--muted);font-size:13px;margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
 h2{font-size:17px;margin:22px 0 6px}
 @media (max-width:420px){.grid{grid-template-columns:1fr}.mk{grid-template-columns:repeat(2,1fr)}}
@@ -110,7 +111,7 @@ document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
 // ---- филтри
 const leagues = [...new Map(D.matches.map(m => [m.div, `${m.country} – ${m.league}`])).entries()];
 leagues.forEach(([k, v]) => fLeague.add(new Option(v, k)));
-[...new Set(D.matches.map(m => m.date))].forEach(d => fDay.add(new Option(fmtDay(d), d)));
+[...new Set(D.matches.map(m => m.date).filter(Boolean))].forEach(d => fDay.add(new Option(fmtDay(d), d)));
 [fLeague, fDay, fTeam].forEach(el => el.oninput = renderMatches);
 
 function card(m) {
@@ -153,12 +154,15 @@ function renderMatches() {
     (!T || (m.home + " " + m.away + " " + (m.home_name || "") + " " + (m.away_name || "")).toLowerCase().includes(T)));
   if (!D.matches.length) { matches.innerHTML = '<p class="empty">В момента няма предстоящи мачове в следващите дни. Програмата с коефициенти се обновява във вторник и петък следобед.</p>'; return; }
   if (!list.length) { matches.innerHTML = '<p class="empty">Няма мачове по тези критерии.</p>'; return; }
-  let html = "", day = null;
-  for (const m of list) {
+  let html = "", day;
+  const dated = list.filter(m => m.date), undated = list.filter(m => !m.date);
+  for (const m of dated) {
     if (m.date !== day) { if (day) html += "</div>"; day = m.date; html += `<div class="day">${fmtDay(day)}</div><div class="grid">`; }
     html += card(m);
   }
-  matches.innerHTML = html + "</div>";
+  if (day) html += "</div>";
+  if (undated.length) html += `<details class="undated"${dated.length ? "" : " open"}><summary class="day">Дата предстои · ${undated.length} мача</summary><div class="grid">${undated.map(card).join("")}</div></details>`;
+  matches.innerHTML = html;
 }
 
 function renderValue() {
@@ -167,7 +171,7 @@ function renderValue() {
   value.innerHTML = `<p style="color:var(--muted)">Сортирани по очаквано предимство. Вероятността е смес от модела и пазара;
     залогът е по ¼ Кели като % от банката.</p><div class="tbl"><table>
     <tr><th>Дата</th><th>Мач</th><th>Пазар</th><th class="n">Коеф.</th><th class="n">Вер.</th><th class="n">Справ. коеф.</th><th class="n">Предимство</th><th class="n">Залог</th></tr>
-    ${v.map(b => `<tr><td>${esc(b.date.slice(5))} ${esc(b.time)}</td><td>${esc(b.home_name || b.home)} – ${esc(b.away_name || b.away)}<br><small style="color:var(--muted)">${esc(b.league)}</small></td>
+    ${v.map(b => `<tr><td>${esc((b.date || '').slice(5))} ${esc(b.time)}</td><td>${esc(b.home_name || b.home)} – ${esc(b.away_name || b.away)}<br><small style="color:var(--muted)">${esc(b.league)}</small></td>
       <td>${esc(b.market)}: <b>${esc(b.selection)}</b></td><td class="n">${num(b.odds)}</td><td class="n">${pct(b.p)}</td>
       <td class="n">${num(b.fair_odds)}</td><td class="n pos">+${Math.round(b.edge * 100)}%</td><td class="n">${num(b.stake_pct, 1)}%</td></tr>`).join("")}
   </table></div>`;
