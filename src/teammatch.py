@@ -1,4 +1,4 @@
-"""Съпоставяне на имената на отборите между football-data.org и football-data.co.uk."""
+"""Съпоставяне на имената на отборите между football-data.org, Understat и football-data.co.uk."""
 from __future__ import annotations
 
 import difflib
@@ -10,7 +10,7 @@ STOP = {"fc", "afc", "cf", "sc", "ac", "as", "ssc", "ss", "us", "sv", "vfb", "vf
         "rc", "ogc", "cd", "ud", "rcd", "sd", "ca", "club", "de", "calcio", "bc", "1", "sco", "aj",
         "ec", "fk", "hsc", "stade", "olympique", "real", "football", "and", "hove", "albion"}
 
-# трудни случаи: нормализирано име от football-data.org -> нормализирано име от .co.uk
+# трудни случаи: нормализирано име от football-data.org / Understat -> нормализирано име от .co.uk
 ALIASES = {
     "psg": "paris sg", "paris saint germain": "paris sg",
     "barca": "barcelona", "atleti": "ath madrid", "atletico madrid": "ath madrid",
@@ -26,6 +26,12 @@ ALIASES = {
     "inter milan": "inter", "internazionale": "inter", "milan": "milan",
     "hellas verona": "verona", "rayo vallecano": "vallecano", "espanyol": "espanol",
     "celta vigo": "celta", "saint etienne": "st etienne", "st pauli": "st pauli",
+    # изписвания в Understat
+    "borussia m gladbach": "mgladbach", "rasenballsport leipzig": "rb leipzig",
+    "cologne": "fc koln", "borussia dortmund": "dortmund", "bayer leverkusen": "leverkusen",
+    "newcastle united": "newcastle", "tottenham hotspur": "tottenham",
+    "real valladolid": "valladolid", "real betis": "betis", "real oviedo": "oviedo",
+    "parma calcio": "parma", "spal 2013": "spal",
 }
 
 

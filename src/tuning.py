@@ -6,6 +6,9 @@
    Правилата (тегло на модела спрямо пазара и минимално предимство) се избират
    по първата половина и се ПРОВЕРЯВАТ върху втората. Пазар остава включен само
    ако печели и в двете половини – иначе value залозите за него се изключват.
+3. Boosting (LightGBM): върху прогнозите на най-добрия Dixon–Coles се учи
+   корекция по форма, xG и почивка. Включва се само ако на последната част от
+   периода (която не е ползвана за обучението) има по-нисък log loss.
 """
 from __future__ import annotations
 
@@ -17,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 import config
-from src import data, params
+from src import boost, data, params, xg
 from src.backtest import logloss_1x2, value_profits, walk_forward
 
 XI_GRID = [0.0010, 0.0019, 0.0030, 0.0045]
@@ -63,6 +66,15 @@ def tune_value(df: pd.DataFrame, market: str) -> dict:
             "tune_roi": roi_t, "tune_bets": n_t, "valid_roi": roi_v, "valid_bets": int(len(pv))}
 
 
+def _print_boost(info: dict):
+    if info.get("logloss_dc") is not None:
+        print(f"     boost: {'ВКЛ' if info['enabled'] else 'ИЗКЛ'} log loss {info['logloss_dc']:.4f} -> "
+              f"{info['logloss_boost']:.4f} ({info['n_train']} обучение / {info['n_valid']} проверка, "
+              f"xG при {info['xg_share']:.0%})")
+    else:
+        print(f"     boost: ИЗКЛ ({info.get('reason')})")
+
+
 def run(offline: bool = False) -> dict:
     out = params.load()
     for country, divs in config.COUNTRIES.items():
@@ -87,7 +99,34 @@ def run(offline: bool = False) -> dict:
               f"пазар {res.get('logloss_market', float('nan')):.4f})")
         for m, v in res["value"].items():
             print(f"     value {m}: {'ВКЛ' if v['enabled'] else 'ИЗКЛ'} {v}")
+        if config.BOOST_ENABLED:
+            res["boost"] = boost.tune_group(country, xg.attach(hist, offline), xi, l2)
+            _print_boost(res["boost"])
         out[country] = res
+
+    if config.BOOST_ENABLED:
+        # Шампионска лига и национални отбори – само boosting слоят (Dixon–Coles е с настройките по подразбиране)
+        print(f"Настройка: {config.CL_NAME}")
+        cl_hist, _ = data.load_champions_league(offline)
+        if len(cl_hist) >= 300:
+            info = boost.tune_group(config.CL_NAME, cl_hist, config.TIME_DECAY_XI, config.L2_PENALTY)
+        else:
+            boost.save(config.CL_NAME, None)
+            info = {"enabled": False, "reason": "няма достатъчно данни"}
+        _print_boost(info)
+        out[config.CL_NAME] = {**out.get(config.CL_NAME, {}), "boost": info}
+
+        print(f"Настройка: {config.NL_NAME}")
+        intl, _ = data.load_internationals(offline)
+        if len(intl) >= 500:
+            info = boost.tune_group(config.NL_NAME, intl, config.INTL_TIME_DECAY_XI,
+                                    config.L2_PENALTY, step=30)
+        else:
+            boost.save(config.NL_NAME, None)
+            info = {"enabled": False, "reason": "няма достатъчно данни"}
+        _print_boost(info)
+        out[config.NL_NAME] = {**out.get(config.NL_NAME, {}), "boost": info}
+
     out["_generated"] = dt.date.today().isoformat()
     params.TUNED.parent.mkdir(parents=True, exist_ok=True)
     params.TUNED.write_text(json.dumps(out, ensure_ascii=False, indent=1), "utf-8")

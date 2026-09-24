@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 import config
-from src import data, markets, names, odds_api, params, teammatch
+from src import boost, data, markets, names, odds_api, params, teammatch, xg
 from src.models import DixonColes, PoissonTeamModel
 
 MIN_CORNER_ROWS = 300
@@ -43,6 +43,10 @@ def predict_match(row: pd.Series, models: dict) -> dict:
     dc, cm = models["goals"], models["corners"]
     neutral = bool(row.get("neutral", False)) if pd.notna(row.get("neutral", False)) else False
     lam, mu = dc.rates(row["home"], row["away"], neutral=neutral)
+    lam_dc, mu_dc = lam, mu
+    boosted = pd.notna(row.get("lam_adj", np.nan)) and pd.notna(row.get("mu_adj", np.nan))
+    if boosted:                          # корекция от LightGBM слоя (форма, xG, почивка)
+        lam, mu = float(row["lam_adj"]), float(row["mu_adj"])
     m = markets.score_matrix(lam, mu, dc.rho)
     g = markets.goal_markets(m, lam, mu)
 
@@ -55,6 +59,8 @@ def predict_match(row: pd.Series, models: dict) -> dict:
         "home": row["home"], "away": row["away"],
         "home_name": names.display(row["home"]), "away_name": names.display(row["away"]),
         **g,
+        "boosted": bool(boosted),
+        "xg_home_dc": round(lam_dc, 2), "xg_away_dc": round(mu_dc, 2),
         "low_confidence": bool(min(dc.n_matches.get(row["home"], 0),
                                    dc.n_matches.get(row["away"], 0)) < 8),
     }
@@ -119,6 +125,17 @@ def _add_fdorg(fx: pd.DataFrame, fd: pd.DataFrame, hist: pd.DataFrame, divs, ref
     return pd.concat([fx, pd.DataFrame(extra)], ignore_index=True)
 
 
+def _boost(name: str, hist: pd.DataFrame, fx: pd.DataFrame, dc) -> pd.DataFrame:
+    try:
+        out = boost.apply(name, hist, fx, dc)
+    except Exception as e:              # noqa: BLE001 – при проблем остава чистият Dixon–Coles
+        print(f"  ! Boost {name}: {e}")
+        return fx
+    if "lam_adj" in out:
+        print(f"  LightGBM корекция за {int(out['lam_adj'].notna().sum())} мача")
+    return out
+
+
 def run(offline: bool = False, today: dt.date | None = None) -> dict:
     today = today or dt.date.today()
     ref = pd.Timestamp(today)
@@ -142,6 +159,8 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
         ratings[country] = models["goals"].ratings().head(60).round(3).to_dict("records")
         fx = fixtures[fixtures["div"].isin(divs) & (fixtures["date"] >= ref) & (fixtures["date"] <= horizon)]
         fx = _add_fdorg(fx, fd_fixtures, hist, divs, ref, horizon)
+        if boost.load(country) is not None:          # xG трябва само ако слоят е включен
+            fx = _boost(country, xg.attach(hist, offline), fx, models["goals"])
         for _, row in fx.iterrows():
             matches.append(predict_match(row, models))
 
@@ -152,6 +171,7 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
         histories.append(cl_hist)
         models = fit_group(cl_hist, ref)
         cl_fx = cl_fx[(cl_fx["date"] >= ref) & (cl_fx["date"] <= horizon)]
+        cl_fx = _boost(config.CL_NAME, cl_hist, cl_fx, models["goals"])
         for _, row in cl_fx.iterrows():
             matches.append(predict_match(row, models))
 
@@ -173,6 +193,7 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
         rt = rt[rt["team"].isin(europe)].round(3)
         rt["team"] = rt["team"].map(names.display)
         ratings["Национални отбори"] = rt.to_dict("records")
+        nl_fx = _boost(config.NL_NAME, intl_hist, nl_fx, dc)
         for _, row in nl_fx.iterrows():
             matches.append(predict_match(row, models))
         print(f"  {len(nl_fx)} предстоящи мача ({int(nl_fx['date'].isna().sum())} без дата)")

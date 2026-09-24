@@ -24,6 +24,7 @@ def walk_forward(hist: pd.DataFrame, name: str | None = None, xi: float | None =
     from src.models import DixonColes
     end = hist["date"].max()
     t = end - pd.Timedelta(days=test_days)
+    has_neutral = "neutral" in hist
     rows = []
     while t < end:
         train = hist[hist["date"] < t]
@@ -32,17 +33,20 @@ def walk_forward(hist: pd.DataFrame, name: str | None = None, xi: float | None =
         if len(test) == 0 or len(train) < 300:
             continue
         if xi is not None:        # режим на настройка: само модел за голове
-            dc, cm = DixonColes(xi=xi, l2=l2).fit(train, t), None
+            dc, cm = DixonColes(xi=xi, l2=l2 if l2 is not None else config.L2_PENALTY).fit(train, t), None
         else:
             models = fit_group(train, t, name, corners=corners)
             dc, cm = models["goals"], models["corners"]
         for _, r in test.iterrows():
-            lam, mu = dc.rates(r.home, r.away)
+            neutral = bool(r.neutral) if has_neutral and pd.notna(r.neutral) else False
+            lam, mu = dc.rates(r.home, r.away, neutral=neutral)
             g = markets.goal_markets(markets.score_matrix(lam, mu, dc.rho), lam, mu)
-            row = {"date": r.date, "hg": r.hg, "ag": r.ag, "ph": g["p_home"], "pd": g["p_draw"],
+            row = {"date": r.date, "div": r["div"], "home": r.home, "away": r.away,
+                   "neutral": neutral, "lam": lam, "mu": mu, "rho": dc.rho,
+                   "hg": r.hg, "ag": r.ag, "ph": g["p_home"], "pd": g["p_draw"],
                    "pa": g["p_away"], "po": g["over_2.5"], "pb": g["btts_yes"],
                    "oh": r.odds_h, "od": r.odds_d, "oa": r.odds_a, "oo": r.odds_o25, "ou": r.odds_u25,
-                   "mh": r.max_h, "md": r.max_d, "ma": r.max_a, "mo": r.max_o25, "mu": r.max_u25}
+                   "mh": r.max_h, "md": r.max_d, "ma": r.max_a, "mo": r.max_o25, "mu_": r.max_u25}
             if cm is not None and pd.notna(r.hc) and cm.knows(r.home) and cm.knows(r.away):
                 row["pc"] = markets.corner_markets(*cm.rates(r.home, r.away))["c_over_9.5"]
                 row["tc"] = r.hc + r.ac
@@ -78,7 +82,7 @@ def value_profits(df: pd.DataFrame, market: str, cfg: dict | None = None) -> np.
             if imp is None:
                 continue
             over = r.hg + r.ag > 2.5
-            for k, (p, o, m) in enumerate([(r.po, r.oo, r.mo), (1 - r.po, r.ou, r.mu)]):
+            for k, (p, o, m) in enumerate([(r.po, r.oo, r.mo), (1 - r.po, r.ou, r.mu_)]):
                 v = markets.value_bet("OU", "", p, o, m, imp[k], **kw)
                 if v:
                     out.append(v["odds"] - 1 if over == (k == 0) else -1.0)
