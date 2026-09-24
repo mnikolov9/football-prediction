@@ -34,6 +34,44 @@ football-data.org ───┘  (ШЛ)                                        sr
 
 За Лигата на нациите няма данни за корнери.
 
+## Структура на файловете
+
+```
+./
+├── run.py                          # команден ред: all / tune / backtest
+├── config.py                       # настройки
+├── requirements.txt
+├── README.md
+├── .gitignore
+├── nations_league_fixtures.csv     # ръчна програма за Лигата на нациите
+├── nations_league_fixtures.example.csv
+├── .github/workflows/daily.yml     # GitHub Actions: ежедневно пускане и публикуване
+├── scripts/make_sample_data.py     # синтетични данни за офлайн тест
+├── templates/index.html            # Jinja шаблон на сайта
+├── src/
+│   ├── __init__.py
+│   ├── data.py                     # сваляне и нормализиране на данните
+│   ├── models.py                   # Dixon–Coles и Poisson модели
+│   ├── markets.py                  # пазари, вероятности, value
+│   ├── predict.py                  # основен процес: данни -> модели -> прогнози
+│   ├── backtest.py                 # walk-forward бектест
+│   ├── tuning.py                   # автоматична настройка на параметрите
+│   ├── params.py                   # зареждане на data/tuned.json
+│   ├── tracking.py                 # track record
+│   ├── odds_api.py                 # коефициенти за Лигата на нациите
+│   ├── teammatch.py                # съпоставяне на имената на отборите
+│   ├── names.py                    # български имена на националните отбори
+│   └── site.py                     # генериране на site/index.html
+├── data/                           # създава се автоматично
+│   ├── raw/                        # кеш на свалените данни (не се качва в git)
+│   ├── log/                        # track record – ПАЗИ ГО, не може да се възстанови
+│   ├── tuned.json                  # настроени параметри
+│   └── backtest.json               # резултати от бектеста
+└── site/                           # генериран сайт (не се качва в git)
+```
+
+`.gitignore` съдържа `__pycache__/`, `data/raw/`, `site/` и `.venv/`.
+
 ## Локално пускане
 
 ```bash
