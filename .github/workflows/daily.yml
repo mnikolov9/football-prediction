@@ -29,15 +29,17 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      # кеш на свалените сезони, за да не се теглят всеки път
+      # кеш на свалените сезони (вкл. xG от Understat), за да не се теглят всеки път
       - uses: actions/cache@v5
         with:
           path: data/raw
           key: raw-${{ github.run_id }}
           restore-keys: raw-
 
-      - name: Настройка на модела и бектест (в понеделник или при първо пускане)
+      - name: Настройка на модела, LightGBM слоя и бектест (в понеделник или при първо пускане)
         if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 5 * * *'
+        env:
+          FOOTBALL_DATA_ORG_KEY: ${{ secrets.FOOTBALL_DATA_ORG_KEY }}
         run: |
           if [ "$(date -u +%u)" = "1" ] || [ ! -f data/tuned.json ]; then python run.py tune;
           elif [ ! -f data/backtest.json ]; then python run.py backtest; fi
@@ -48,11 +50,12 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: python run.py all
 
-      - name: Запис на track record-а в репото
+      - name: Запис на track record-а и моделите в репото
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add data/log data/backtest.json data/tuned.json 2>/dev/null || true
+          # data/raw е в .gitignore; -A записва и изтритите LightGBM модели
+          git add -A data
           git diff --cached --quiet || git commit -m "Обновени прогнози $(date -u +%F)"
           git push
 
