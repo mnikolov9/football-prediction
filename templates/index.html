@@ -62,6 +62,21 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .undated summary{list-style:revert;cursor:pointer}
 .note{color:var(--muted);font-size:13px;margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
 h2{font-size:17px;margin:22px 0 6px}
+.bankctl{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:6px}
+.bankctl label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
+.bankctl input{flex:none;width:110px;min-width:0}
+.bankctl label[hidden]{display:none}
+#past td+td{white-space:nowrap}
+#past td:first-child{min-width:170px}
+.chart{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 12px 4px}
+.chart svg{display:block;width:100%;height:auto}
+.chart .ax{fill:var(--muted);font-size:11px}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .base{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4}
+.chart .ln{fill:none;stroke:var(--home);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .dot{fill:var(--home);stroke:var(--card);stroke-width:2}
+.chart .cross{stroke:var(--muted);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-110%);display:none}
 @media (max-width:420px){.grid{grid-template-columns:1fr}.mk{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -71,6 +86,8 @@ h2{font-size:17px;margin:22px 0 6px}
   <nav id="tabs">
     <button data-t="pred" class="on">Прогнози</button>
     <button data-t="value">Value залози</button>
+    <button data-t="bank">Банка</button>
+    <button data-t="past">Минали мачове</button>
     <button data-t="perf">Резултати на модела</button>
     <button data-t="rat">Рейтинги</button>
   </nav>
@@ -86,6 +103,8 @@ h2{font-size:17px;margin:22px 0 6px}
     <div id="matches"></div>
   </section>
   <section id="value" hidden></section>
+  <section id="bank" hidden></section>
+  <section id="past" hidden></section>
   <section id="perf" hidden></section>
   <section id="rat" hidden></section>
 
@@ -107,7 +126,10 @@ const fmtDay = d => { const x = new Date(d + "T12:00:00"); return `${DAYS[x.getD
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
   document.querySelectorAll("main > section").forEach(s => s.hidden = s.id !== b.dataset.t);
+  if (b.dataset.t === "bank") renderBank();     // графиката се мери по видимата ширина
 });
+let resizeT;
+window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (!bank.hidden) renderBank(); }, 200); });
 
 // ---- филтри
 const leagues = [...new Map(D.matches.map(m => [m.div, `${m.country} – ${m.league}`])).entries()];
@@ -237,7 +259,217 @@ function renderRatings() {
     </table></div>`).join("");
 }
 
-renderMatches(); renderValue(); renderPerf(); renderRatings();
+
+// ---- банка: по един залог на ден – най-вероятният изход, % от банката
+const B = D.bank || {live: [], backtest: []};
+const PCT = B.daily_pct ?? 25;
+const bankOpt = {start: B.start ?? 100, src: "live"};
+try { const o = JSON.parse(localStorage.getItem("fp-bank2") || "{}");
+      if (o.start > 0) bankOpt.start = o.start; if (o.src) bankOpt.src = o.src; } catch (e) {}
+const eur = v => (v < 0 ? "−" : "") + Math.abs(v).toFixed(2) + " €";
+const sEur = v => (v > 0.004 ? "+" : v < -0.004 ? "−" : "") + Math.abs(v).toFixed(2) + " €";
+const sPct = v => (v > 0.0004 ? "+" : v < -0.0004 ? "−" : "") + Math.abs(100 * v).toFixed(1) + "%";
+const cls = v => v > 0.004 ? "pos" : v < -0.004 ? "neg" : "";
+const fmtMonth = m => new Date(m + "-15T12:00:00").toLocaleDateString("bg-BG", {month: "long", year: "numeric"});
+const withYear = d => fmtDay(d) + (d.slice(0, 4) !== String(new Date().getFullYear()) ? " " + d.slice(0, 4) : "");
+
+function groupBy(list, key) {
+  const m = new Map();
+  for (const x of list) { const k = key(x); if (!m.has(k)) m.set(k, []); m.get(k).push(x); }
+  return [...m.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1);
+}
+
+function simulate(bets) {
+  const start = Math.max(0, Number(bankOpt.start) || 0);
+  let bank = start, peak = start, mdd = 0, staked = 0, wins = 0, pexp = 0;
+  const days = [];
+  for (const b of bets.filter(b => b.profit != null)) {
+    const stake = Math.floor(bank * PCT) / 100, before = bank, pl = stake * b.profit;
+    bank = Math.max(0, bank + pl);
+    peak = Math.max(peak, bank);
+    if (peak > 0) mdd = Math.max(mdd, (peak - bank) / peak);
+    staked += stake; pexp += b.p; if (b.profit > 0) wins++;
+    days.push({date: b.date, n: 1, wins: b.profit > 0 ? 1 : 0, staked: stake, pl, before, bank, bet: {...b, stake}});
+  }
+  const months = groupBy(days, d => d.date.slice(0, 7)).map(([month, ds]) => ({
+    month, n: ds.length, wins: ds.reduce((a, d) => a + d.wins, 0),
+    staked: ds.reduce((a, d) => a + d.staked, 0), pl: ds.reduce((a, d) => a + d.pl, 0),
+    before: ds[0].before, bank: ds[ds.length - 1].bank}));
+  const pending = bets.filter(b => b.profit == null).map(b => ({...b, stake: Math.floor(bank * PCT) / 100}));
+  return {start, bank, days, months, pending, mdd, staked, n: days.length, wins, pexp};
+}
+
+// размер на графиката според ширината на страницата (за четим текст и на телефон)
+function chartGeom(r) {
+  const W = Math.round(Math.max(300, Math.min(1100, (bank.clientWidth || 800) - 26)));
+  const H = W < 560 ? 200 : 240, L = 50, R = 10, T = 12, Bm = 24;
+  const pts = [{date: "начало", bank: r.start, pl: 0, n: 0}, ...r.days];
+  const vals = pts.map(p => p.bank), lo = Math.min(...vals, r.start), hi = Math.max(...vals, r.start);
+  const pad = (hi - lo) * 0.08 || Math.max(1, r.start * 0.05), y0 = lo - pad, y1 = hi + pad;
+  const x = i => L + (pts.length === 1 ? (W - L - R) / 2 : i * (W - L - R) / (pts.length - 1));
+  const y = v => T + (y1 - v) * (H - T - Bm) / (y1 - y0);
+  return {W, H, L, R, T, Bm, pts, pad, y0, y1, x, y};
+}
+
+function bankChart(r) {
+  if (!r.days.length) return "";
+  const {W, H, L, R, T, Bm, pts, pad, y0, y1, x, y} = chartGeom(r);
+  const path = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.bank).toFixed(1)}`).join("");
+  const ticks = [y0 + pad, r.start, y1 - pad].filter((v, i, a) => a.findIndex(u => Math.abs(y(u) - y(v)) < 14) === i);
+  const first = r.days[0].date, last = r.days[r.days.length - 1].date;
+  return `<div class="chart" id="bchart">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Банка по дни: от ${eur(r.start)} до ${eur(r.bank)}">
+      ${ticks.map(v => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v.toFixed(0)} €</text>`).join("")}
+      <line class="base" x1="${L}" x2="${W - R}" y1="${y(r.start)}" y2="${y(r.start)}"/>
+      <path class="ln" d="${path}"/>
+      <text class="ax" x="${L}" y="${H - 6}">${esc(first)}</text>
+      <text class="ax" x="${W - R}" y="${H - 6}" text-anchor="end">${esc(last)}</text>
+      <line class="cross" id="bcross" y1="${T}" y2="${H - Bm}" style="display:none"/>
+      <circle class="dot" id="bdot" r="5" style="display:none"/>
+      <rect id="bhit" x="${L}" y="0" width="${W - L - R}" height="${H}" fill="transparent"/>
+    </svg><div class="tip" id="btip"></div></div>`;
+}
+
+function bankChartHover(r) {
+  const svg = document.querySelector("#bchart svg"); if (!svg) return;
+  const hit = svg.querySelector("#bhit"), tip = document.getElementById("btip");
+  const cross = svg.querySelector("#bcross"), dot = svg.querySelector("#bdot");
+  const {W, H, L, R, pts, x, y} = chartGeom(r);
+  const pick = clientX => {
+    const box = svg.getBoundingClientRect(), sx = (clientX - box.left) * W / box.width;
+    const i = Math.max(0, Math.min(pts.length - 1, Math.round((sx - L) / ((W - L - R) / Math.max(1, pts.length - 1)))));
+    const p = pts[i];
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.style.display = "";
+    dot.setAttribute("cx", x(i)); dot.setAttribute("cy", y(p.bank)); dot.style.display = "";
+    tip.innerHTML = `${esc(p.date)}<br><b>${eur(p.bank)}</b>${p.n ? ` · ${p.n} залога · ${sEur(p.pl)}` : ""}`;
+    const left = Math.max(70, Math.min(box.width - 70, x(i) * box.width / W + 12));
+    tip.style.left = left + "px";
+    tip.style.top = (y(p.bank) * box.height / H + 12) + "px";
+    tip.style.display = "block";
+  };
+  hit.addEventListener("mousemove", e => pick(e.clientX));
+  hit.addEventListener("touchmove", e => { pick(e.touches[0].clientX); e.preventDefault(); }, {passive: false});
+  const hide = () => { tip.style.display = cross.style.display = dot.style.display = "none"; };
+  hit.addEventListener("mouseleave", hide);
+  hit.addEventListener("touchend", hide);
+}
+
+function betCell(b) {
+  return `${esc(b.market)}: <b>${esc(b.selection)}</b>`;
+}
+
+function renderBank() {
+  const r = simulate(bankOpt.src === "backtest" ? (B.backtest || []) : (B.live || []));
+  const pl = r.bank - r.start;
+  let h = `<div class="bankctl">
+    <label>Начална банка (€)<input id="bStart" type="number" min="1" step="10" value="${esc(bankOpt.start)}"></label>
+    <label>Залози<select id="bSrc"><option value="live">Реални (от сайта)</option><option value="backtest">Бектест (минали мачове)</option></select></label>
+  </div>
+  <p style="color:var(--muted);font-size:13px">Всеки ден един залог с <b>${PCT}% от банката</b>: изходът с най-висока вероятност по модела
+    сред всички мачове за деня – краен резултат (1, X, 2) или над/под 2.5 гола (пазарите с реални коефициенти). Коефициентът е средният на пазара.
+    ${bankOpt.src === "backtest" ? "Бектест: същото правило върху минали мачове, които моделът не е виждал при обучението." : "Залогът за деня се фиксира сутринта на мачовете и после не се сменя."}</p>`;
+  if (!r.days.length && !r.pending.length) {
+    h += `<p class="empty">${bankOpt.src === "backtest"
+      ? "Няма данни от бектеста. Появяват се след следващата настройка на модела (всеки понеделник)."
+      : "Още няма дневни залози. Първият ще се появи при следващото обновяване на прогнозите."}</p>`;
+  } else {
+    if (r.pending.length) {
+      const nx = r.pending[0];
+      h += `<div class="card" style="margin-bottom:12px"><div class="meta"><span>Следващ залог · ${esc(withYear(nx.date))}</span><span>${esc(nx.league)}</span></div>
+        <div style="font-weight:700;font-size:16px">${esc(nx.home)} – ${esc(nx.away)}</div>
+        <div style="margin-top:6px">${betCell(nx)} @ <b>${num(nx.odds)}</b> · вероятност ${pct(nx.p)}</div>
+        <div style="margin-top:6px;color:var(--muted)">Залог <b style="color:var(--ink)">${eur(nx.stake)}</b> (${PCT}% от ${eur(r.bank)}) · при успех ${sEur(nx.stake * (nx.odds - 1))}</div></div>`;
+    }
+    h += `<div class="kpis">${kpi("Начална банка", eur(r.start))}${kpi("Банка сега", eur(r.bank))}
+      ${kpi("Печалба / загуба", `${sEur(pl)} (${r.start ? sPct(pl / r.start) : "–"})`, cls(pl))}
+      ${kpi("Дни със залог", r.n ? `${r.n} · ${Math.round(100 * r.wins / r.n)}% печеливши` : "0")}
+      ${kpi("Очакван успех по модела", r.n ? pct(r.pexp / r.n) : "–")}
+      ${kpi("Най-голям спад", (100 * r.mdd).toFixed(1) + "%")}</div>`;
+    h += bankChart(r);
+    if (r.pending.length > 1) {
+      h += `<h2>Следващи дни</h2><p style="color:var(--muted);font-size:13px">Може да се сменят, докато излязат нови коефициенти. Сумата е по текущата банка.</p>
+      <div class="tbl"><table><tr><th>Дата</th><th>Мач</th><th>Залог</th><th class="n">Вер.</th><th class="n">Коеф.</th><th class="n">Сума</th></tr>
+      ${r.pending.slice(1).map(b => `<tr><td>${esc(withYear(b.date))}</td><td>${esc(b.home)} – ${esc(b.away)}<br><small style="color:var(--muted)">${esc(b.league)}</small></td>
+        <td>${betCell(b)}</td><td class="n">${pct(b.p)}</td><td class="n">${num(b.odds)}</td><td class="n">≈ ${eur(b.stake)}</td></tr>`).join("")}</table></div>`;
+    }
+    if (r.months.length) {
+      h += `<h2>По месеци</h2><div class="tbl"><table><tr><th>Месец</th><th class="n">Залози</th><th class="n">Печеливши</th><th class="n">Заложено</th><th class="n">Печалба / загуба</th><th class="n">Банка в края</th><th class="n">Промяна</th></tr>
+      ${r.months.slice().reverse().map(m => `<tr><td>${esc(fmtMonth(m.month))}</td><td class="n">${m.n}</td><td class="n">${m.wins}</td>
+        <td class="n">${eur(m.staked)}</td><td class="n ${cls(m.pl)}">${sEur(m.pl)}</td>
+        <td class="n">${eur(m.bank)}</td><td class="n ${cls(m.pl)}">${m.before ? sPct((m.bank - m.before) / m.before) : "–"}</td></tr>`).join("")}</table></div>`;
+    }
+    if (r.days.length) {
+      h += `<h2>По дни</h2><div class="tbl"><table><tr><th>Дата</th><th>Мач</th><th>Залог</th><th class="n">Вер.</th><th class="n">Коеф.</th><th class="n">Сума</th><th class="n">Печалба / загуба</th><th class="n">Банка</th></tr>
+      ${r.days.slice().reverse().map(d => { const b = d.bet; return `<tr><td>${esc(withYear(d.date))}</td>
+        <td>${esc(b.home)} – ${esc(b.away)} <b>${esc(b.score || "")}</b><br><small style="color:var(--muted)">${esc(b.league)}</small></td>
+        <td>${betCell(b)} ${b.profit > 0 ? '<span class="pos">✓</span>' : '<span class="neg">✗</span>'}</td><td class="n">${pct(b.p)}</td><td class="n">${num(b.odds)}</td>
+        <td class="n">${eur(d.staked)}</td><td class="n ${cls(d.pl)}">${sEur(d.pl)}</td><td class="n">${eur(d.bank)}</td></tr>`; }).join("")}</table></div>`;
+    }
+  }
+  bank.innerHTML = h;
+  bSrc.value = bankOpt.src;
+  const save = () => { try { localStorage.setItem("fp-bank2", JSON.stringify(bankOpt)); } catch (e) {} };
+  bStart.onchange = () => { bankOpt.start = Math.max(1, Number(bStart.value) || 100); save(); renderBank(); };
+  bSrc.onchange = () => { bankOpt.src = bSrc.value; save(); renderBank(); };
+  bankChartHover(r);
+}
+
+// ---- минали мачове: прогноза срещу резултат
+const PAST = D.past || [];
+const dailyKeys = new Set((B.live || []).map(b => `${b.date}|${b.home}|${b.away}`));
+const pastOpt = {league: "", team: ""};
+
+function verdict(pred, ok, p) {
+  if (p == null) return "–";
+  return `${esc(pred)} · ${pct(p)} ${ok ? '<span class="pos" title="познато">✓</span>' : '<span class="neg" title="непознато">✗</span>'}`;
+}
+
+function pastRow(m) {
+  const res = m.hg > m.ag ? "1" : m.hg === m.ag ? "X" : "2";
+  const pPick = {"1": m.p_home, "X": m.p_draw, "2": m.p_away}[m.pick];
+  const over = m.hg + m.ag > 2.5, gg = m.hg > 0 && m.ag > 0;
+  const corners = m.c_over != null && m.corners != null
+    ? verdict(m.c_over >= 0.5 ? "Над 9.5" : "Под 9.5", (m.c_over >= 0.5) === (m.corners > 9.5), Math.max(m.c_over, 1 - m.c_over)) +
+      ` <small style="color:var(--muted)">(${m.corners})</small>` : "–";
+  const star = dailyKeys.has(`${m.date}|${m.home}|${m.away}`) ? ' <span class="tag" style="margin:0 0 0 4px;padding:1px 6px">залог на деня</span>' : "";
+  return `<tr><td>${esc(m.home)} – ${esc(m.away)}${star}<br><small style="color:var(--muted)">${esc(m.country)} · ${esc(m.league)}</small></td>
+    <td class="n"><b>${m.hg}-${m.ag}</b></td>
+    <td>${verdict(m.pick, m.pick === res, pPick)}</td>
+    <td>${verdict(m.over >= 0.5 ? "Над 2.5" : "Под 2.5", (m.over >= 0.5) === over, m.over == null ? null : Math.max(m.over, 1 - m.over))}</td>
+    <td>${verdict(m.btts >= 0.5 ? "ГГ да" : "ГГ не", (m.btts >= 0.5) === gg, m.btts == null ? null : Math.max(m.btts, 1 - m.btts))}</td>
+    <td>${corners}</td></tr>`;
+}
+
+function renderPast() {
+  if (!PAST.length) { past.innerHTML = '<p class="empty">Още няма изиграни мачове с наша прогноза. Ще се появят след първите изиграни мачове.</p>'; return; }
+  const L = pastOpt.league, T = pastOpt.team.trim().toLowerCase();
+  const list = PAST.filter(m => (!L || m.div === L) && (!T || (m.home + " " + m.away).toLowerCase().includes(T)));
+  const leaguesP = [...new Map(PAST.map(m => [m.div, `${m.country} – ${m.league}`])).entries()];
+  const acc = f => { const xs = list.filter(m => f(m) != null); return xs.length ? pct(xs.filter(f).length / xs.length) : "–"; };
+  const ok1 = m => m.pick === (m.hg > m.ag ? "1" : m.hg === m.ag ? "X" : "2");
+  const okOU = m => m.over == null ? null : (m.over >= 0.5) === (m.hg + m.ag > 2.5);
+  const okGG = m => m.btts == null ? null : (m.btts >= 0.5) === (m.hg > 0 && m.ag > 0);
+  const okC = m => m.c_over == null || m.corners == null ? null : (m.c_over >= 0.5) === (m.corners > 9.5);
+  let h = `<div class="filters"><select id="pLeague"><option value="">Всички първенства</option>
+      ${leaguesP.map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join("")}</select>
+      <input id="pTeam" placeholder="Търси отбор…" value="${esc(pastOpt.team)}"></div>
+    <div class="kpis">${kpi("Мачове", list.length)}${kpi("Познат краен резултат", acc(ok1))}${kpi("Над/под 2.5", acc(okOU))}
+      ${kpi("ГГ", acc(okGG))}${kpi("Корнери 9.5", acc(okC))}</div>
+    <p style="color:var(--muted);font-size:13px">Последната ни прогноза преди мача срещу реалния резултат (последните ${D.past_days ?? 60} дни). При всеки пазар е показан по-вероятният изход и вероятността му.</p>`;
+  if (!list.length) h += '<p class="empty">Няма мачове по тези критерии.</p>';
+  for (const [day, ms] of groupBy(list, m => m.date).reverse()) {
+    h += `<div class="day">${esc(withYear(day))}</div><div class="tbl"><table>
+      <tr><th>Мач</th><th class="n">Резултат</th><th>Краен резултат</th><th>Над/под 2.5</th><th>ГГ</th><th>Корнери</th></tr>
+      ${ms.map(pastRow).join("")}</table></div>`;
+  }
+  past.innerHTML = h;
+  pLeague.value = pastOpt.league;
+  pLeague.onchange = () => { pastOpt.league = pLeague.value; renderPast(); };
+  pTeam.oninput = () => { pastOpt.team = pTeam.value; clearTimeout(pTeam._t);
+    pTeam._t = setTimeout(() => { renderPast(); const t = document.getElementById("pTeam"); t.focus(); t.setSelectionRange(t.value.length, t.value.length); }, 250); };
+}
+
+renderMatches(); renderValue(); renderBank(); renderPast(); renderPerf(); renderRatings();
 </script>
 </body>
 </html>
