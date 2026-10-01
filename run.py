@@ -34,8 +34,9 @@ def cmd_all(offline: bool):
                                        for b in r.pop("daily_log", [])]),
     }
     # таб „Минали мачове“: прогноза срещу резултат
-    result["past"] = tracking.past_results(hist, days=config.PAST_DAYS)
+    result["past"] = tracking.past_results(hist, days=config.PAST_DAYS, days_nations=config.PAST_DAYS_NATIONS)
     result["past_days"] = config.PAST_DAYS
+    result["past_days_nations"] = config.PAST_DAYS_NATIONS
     result["tuning"] = params.load()
     site.build(result)
     print(f"Готово: {len(result['matches'])} мача, {len(result['value_bets'])} value залога "
