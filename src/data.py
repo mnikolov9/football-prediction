@@ -276,6 +276,54 @@ INTL_ALIASES = {
 }
 
 
+def _manual_fixtures() -> pd.DataFrame:
+    if not config.NL_MANUAL_FIXTURES.exists():
+        return pd.DataFrame(columns=["date", "home", "away"])
+    man = pd.read_csv(config.NL_MANUAL_FIXTURES, dtype=str).dropna(subset=["home", "away"])
+    man["home"] = man["home"].str.strip().replace(INTL_ALIASES)
+    man["away"] = man["away"].str.strip().replace(INTL_ALIASES)
+    man["date"] = pd.to_datetime(man.get("date"), dayfirst=True, format="mixed", errors="coerce")
+    return man
+
+
+def _extra_nl_results() -> pd.DataFrame:
+    """Резултати от Лигата на нациите извън martj42: data/log/intl_results.csv
+    (попълва се автоматично от The Odds API) + колоните home_score/away_score
+    в nations_league_fixtures.csv (ръчно)."""
+    frames = []
+    if config.NL_RESULTS_LOG.exists():
+        r = pd.read_csv(config.NL_RESULTS_LOG)
+        r["date"] = pd.to_datetime(r["date"], errors="coerce")
+        frames.append(r[["date", "home", "away", "hg", "ag"]])
+    man = _manual_fixtures()
+    if "home_score" in man and "away_score" in man:
+        man["hg"] = pd.to_numeric(man["home_score"], errors="coerce")
+        man["ag"] = pd.to_numeric(man["away_score"], errors="coerce")
+        frames.append(man.dropna(subset=["date", "hg", "ag"])[["date", "home", "away", "hg", "ag"]])
+    if not frames:
+        return pd.DataFrame(columns=["date", "home", "away", "hg", "ag"])
+    return pd.concat(frames, ignore_index=True).dropna(subset=["date", "hg", "ag"])
+
+
+def _add_missing_results(hist: pd.DataFrame, extra: pd.DataFrame) -> pd.DataFrame:
+    """Добавя резултатите, които ги няма в историята (същите отбори ±2 дни)."""
+    if extra.empty:
+        return hist
+    rows = []
+    for r in extra.itertuples(index=False):
+        same = hist[(hist["home"] == r.home) & (hist["away"] == r.away)]
+        if len(same) and ((same["date"] - r.date).abs() <= pd.Timedelta(days=2)).any():
+            continue
+        rows.append({"date": r.date, "time": "", "div": config.NL_CODE, "home": r.home, "away": r.away,
+                     "hg": float(r.hg), "ag": float(r.ag), "neutral": False, "wt": 1.0,
+                     "tournament": "UEFA Nations League"})
+    if not rows:
+        return hist
+    add = pd.DataFrame(rows).reindex(columns=hist.columns)
+    print(f"  {len(add)} резултата от Лигата на нациите извън martj42")
+    return pd.concat([hist, add], ignore_index=True)
+
+
 def load_internationals(offline: bool = False) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Връща (история на всички международни мачове, предстоящи мачове от Лигата на нациите)."""
     path = config.RAW_DIR / "international_results.csv"
@@ -309,6 +357,8 @@ def load_internationals(offline: bool = False) -> tuple[pd.DataFrame, pd.DataFra
         if c not in out:
             out[c] = np.nan
     hist = out.dropna(subset=["hg", "ag"])
+    # резултати, които martj42 още не е добавил (от The Odds API или ръчно въведени)
+    hist = _add_missing_results(hist, _extra_nl_results())
     # предстоящите мачове са редове без резултат
     fut = out[out["hg"].isna() & (out["div"] == config.NL_CODE)]
     if config.NL_MANUAL_FIXTURES.exists():
@@ -324,6 +374,8 @@ def load_internationals(offline: bool = False) -> tuple[pd.DataFrame, pd.DataFra
                        if "time" in man else "")
         man["wt"] = 1.0
         man["tournament"] = "UEFA Nations League"
+        if "home_score" in man and "away_score" in man:      # мачове с въведен резултат не са предстоящи
+            man = man[pd.to_numeric(man["home_score"], errors="coerce").isna()]
         for c in COLUMNS:
             if c not in man:
                 man[c] = np.nan

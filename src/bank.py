@@ -1,8 +1,9 @@
 """Банка: по един залог на ден – най-вероятният изход сред всички мачове за деня.
 
 Кандидати са само пазарите с реални коефициенти: краен резултат (1, X, 2) и
-над/под 2.5 гола. Избира се изходът с най-висока вероятност по модела
-(при равенство – с по-високия коефициент). Залогът е BANK_DAILY_PCT % от банката.
+над/под 2.5 гола, с коефициент поне BANK_MIN_ODDS. Избира се изходът с най-висока
+вероятност по модела (при равенство – с по-високия коефициент). Ако и той е под
+BANK_MIN_PROB, за деня няма залог. Залогът е BANK_DAILY_PCT % от банката.
 Ползва се средният коефициент на пазара (реално достъпен при повечето букмейкъри).
 """
 from __future__ import annotations
@@ -21,8 +22,15 @@ def _ok(o) -> bool:
     return o is not None and np.isfinite(o) and o > 1 and o >= config.BANK_MIN_ODDS
 
 
+def _valid(c: dict) -> bool:
+    """Отговаря ли залогът на текущите правила (коефициент и вероятност)."""
+    p = c.get("p")
+    return (_ok(c.get("odds")) and p is not None and np.isfinite(p)
+            and p >= config.BANK_MIN_PROB)
+
+
 def _best(cands: list[dict]) -> dict | None:
-    cands = [c for c in cands if _ok(c["odds"]) and c["p"] is not None and np.isfinite(c["p"])]
+    cands = [c for c in cands if _valid(c)]
     return max(cands, key=lambda c: (c["p"], c["odds"])) if cands else None
 
 
@@ -57,7 +65,11 @@ def log_daily(picks: dict[str, dict], today: str):
     """Залогът за ден се „заключва“ в деня на мачовете: минали и днешни записи
     не се променят, бъдещите се заменят с най-новия избор."""
     old = pd.read_csv(DAILY_LOG, dtype={"date": str}) if DAILY_LOG.exists() else pd.DataFrame(columns=COLS)
-    keep = old[old["date"] <= today]
+    # минали дни – без промяна; днешният залог остава, само ако отговаря на
+    # текущите правила (напр. след смяна на минималния коефициент)
+    old_ok = old.apply(lambda r: _valid({"odds": float(r["odds"]), "p": float(r["p"])}), axis=1) \
+        if len(old) else pd.Series(dtype=bool)
+    keep = old[(old["date"] < today) | ((old["date"] == today) & old_ok)]
     have = set(keep["date"])
     new = pd.DataFrame([{k: p[k] for k in COLS} for d, p in sorted(picks.items())
                         if d >= today and d not in have], columns=COLS)

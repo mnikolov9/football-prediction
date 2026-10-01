@@ -176,6 +176,7 @@ def run(offline: bool = False, today: dt.date | None = None) -> dict:
             matches.append(predict_match(row, models))
 
     print("Лига на нациите...")
+    odds_api.update_scores(offline=offline)        # резултатите, които martj42 още няма
     intl_hist, nl_fx = data.load_internationals(offline)
     intl_hist = intl_hist[intl_hist["date"] < ref] if len(intl_hist) else intl_hist
     if len(nl_fx):
