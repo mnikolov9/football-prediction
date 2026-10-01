@@ -13,7 +13,7 @@ import json
 import time
 
 import config
-from src import backtest, params, predict, site, tracking, tuning
+from src import backtest, bank, params, predict, site, tracking, tuning
 
 
 def cmd_all(offline: bool):
@@ -24,6 +24,18 @@ def cmd_all(offline: bool):
     result["track_record"] = tracking.evaluate(hist)
     bt_path = config.DATA_DIR / "backtest.json"
     result["backtest"] = json.loads(bt_path.read_text("utf-8")) if bt_path.exists() else {}
+    # таб „Банка“: по един залог на ден (най-вероятният изход)
+    picks = bank.daily_picks(result["matches"])
+    bank.log_daily(picks, today.isoformat())
+    result["bank"] = {
+        "start": config.BANK_START, "daily_pct": config.BANK_DAILY_PCT,
+        "live": bank.history(hist),
+        "backtest": bank.best_per_day([b for r in result["backtest"].values() if isinstance(r, dict)
+                                       for b in r.pop("daily_log", [])]),
+    }
+    # таб „Минали мачове“: прогноза срещу резултат
+    result["past"] = tracking.past_results(hist, days=config.PAST_DAYS)
+    result["past_days"] = config.PAST_DAYS
     result["tuning"] = params.load()
     site.build(result)
     print(f"Готово: {len(result['matches'])} мача, {len(result['value_bets'])} value залога "
