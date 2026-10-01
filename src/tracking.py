@@ -142,28 +142,90 @@ def bets_history(hist: pd.DataFrame) -> list[dict]:
     return out
 
 
-def past_results(hist: pd.DataFrame, days: int = 60) -> list[dict]:
-    """Изиграните мачове от последните `days` дни: последната ни прогноза + резултатът."""
-    preds = _load(PRED_LOG)
-    if preds.empty or hist.empty:
+TOURNAMENTS_BG = {
+    "Friendly": "Приятелски", "UEFA Nations League": "Лига на нациите",
+    "FIFA World Cup qualification": "Квалификации за СП", "UEFA Euro qualification": "Квалификации за Евро",
+    "FIFA World Cup": "Световно първенство", "UEFA Euro": "Европейско първенство",
+}
+
+
+def _past_row(date, div, league, home, away, hg, ag, hc, ac, ph, pd_, pa, over, btts, cover, pick, retro=False):
+    f = lambda v: None if v is None or pd.isna(v) else float(v)
+    return {
+        "date": date, "div": div, "league": league, "country": config.DIV_COUNTRY.get(div, ""),
+        "home": names.display(home), "away": names.display(away), "hg": int(hg), "ag": int(ag),
+        "corners": None if hc is None or pd.isna(hc) or pd.isna(ac) else int(hc + ac),
+        "p_home": f(ph), "p_draw": f(pd_), "p_away": f(pa), "over": f(over), "btts": f(btts), "c_over": f(cover),
+        "pick": str(pick), "retro": retro,
+    }
+
+
+def nations_retro(hist: pd.DataFrame, since: str, skip: set) -> list[dict]:
+    """Прогнози за изиграните мачове между европейски национални отбори, които
+    не са в лога (напр. изиграни преди сайтът да започне да ги записва).
+    Изчисляват се след мача, но моделът се обучава САМО с мачовете преди
+    съответния прозорец за национални отбори – както би било преди мача."""
+    from src import markets
+    from src.models import DixonColes
+    intl = hist[hist["div"].isin([config.NL_CODE, "INT"])].dropna(subset=["hg", "ag"])
+    if len(intl) < 300:
         return []
-    h = hist[["date", "div", "home", "away", "hg", "ag", "hc", "ac"]].copy()
-    h["date"] = h["date"].dt.strftime("%Y-%m-%d")
-    since = (pd.Timestamp.today() - pd.Timedelta(days=days)).strftime("%Y-%m-%d")
-    preds["date"] = preds["date"].astype(str)
-    preds = preds.rename(columns={"over_2.5": "over25", "c_over_9.5": "cover95"})
-    df = preds[preds["date"] >= since].merge(h.drop_duplicates(KEY), on=KEY, how="inner").dropna(subset=["hg"])
-    out = []
-    for r in df.sort_values(["date", "div"], ascending=[False, True]).itertuples(index=False):
-        g = lambda k: None if pd.isna(getattr(r, k, np.nan)) else float(getattr(r, k))
-        out.append({
-            "date": r.date, "div": r.div, "league": config.DIV_NAMES.get(r.div, r.div),
-            "country": config.DIV_COUNTRY.get(r.div, ""),
-            "home": names.display(r.home), "away": names.display(r.away),
-            "hg": int(r.hg), "ag": int(r.ag),
-            "corners": None if pd.isna(r.hc) or pd.isna(r.ac) else int(r.hc + r.ac),
-            "p_home": g("p_home"), "p_draw": g("p_draw"), "p_away": g("p_away"),
-            "over": g("over25"), "btts": g("btts_yes"), "c_over": g("cover95"),
-            "pick": str(r.pick),
-        })
+    europe = set(names.NATIONS_BG)
+    tgt = intl[(intl["date"] >= since) & intl["home"].isin(europe) & intl["away"].isin(europe)].copy()
+    tgt = tgt[[(d.strftime("%Y-%m-%d"), h, a) not in skip for d, h, a in zip(tgt["date"], tgt["home"], tgt["away"])]]
+    if tgt.empty:
+        return []
+    # прозорци: мачове с разлика до 5 дни делят един модел
+    dates = sorted(tgt["date"].unique())
+    windows, start = {}, dates[0]
+    for i, d in enumerate(dates):
+        if i and (d - dates[i - 1]).days > 5:
+            start = d
+        windows[d] = start
+    out, models = [], {}
+    for r in tgt.sort_values("date").itertuples(index=False):
+        w = windows[r.date]
+        if w not in models:
+            models[w] = DixonColes(xi=config.INTL_TIME_DECAY_XI).fit(intl[intl["date"] < w], w)
+        dc = models[w]
+        neutral = bool(r.neutral) if pd.notna(r.neutral) else False
+        lam, mu = dc.rates(r.home, r.away, neutral=neutral)
+        g = markets.goal_markets(markets.score_matrix(lam, mu, dc.rho), lam, mu)
+        probs = {"1": g["p_home"], "X": g["p_draw"], "2": g["p_away"]}
+        league = TOURNAMENTS_BG.get(getattr(r, "tournament", ""), getattr(r, "tournament", "") or
+                                    config.DIV_NAMES.get(r.div, r.div))
+        out.append(_past_row(r.date.strftime("%Y-%m-%d"), r.div, league, r.home, r.away, r.hg, r.ag,
+                             None, None, g["p_home"], g["p_draw"], g["p_away"], g["over_2.5"],
+                             g["btts_yes"], None, max(probs, key=probs.get), retro=True))
     return out
+
+
+def past_results(hist: pd.DataFrame, days: int = 60, days_nations: int | None = None) -> list[dict]:
+    """Изиграните мачове: последната ни прогноза + резултатът. За националните
+    отбори се добавят и мачовете, които не са в лога (виж nations_retro)."""
+    if hist.empty:
+        return []
+    preds = _load(PRED_LOG)
+    since = (pd.Timestamp.today() - pd.Timedelta(days=days)).strftime("%Y-%m-%d")
+    since_n = (pd.Timestamp.today() - pd.Timedelta(days=days_nations or days)).strftime("%Y-%m-%d")
+    out, skip = [], set()
+    if not preds.empty:
+        h = hist[["date", "div", "home", "away", "hg", "ag", "hc", "ac"]
+                 + (["tournament"] if "tournament" in hist else [])].copy()
+        h["date"] = h["date"].dt.strftime("%Y-%m-%d")
+        preds["date"] = preds["date"].astype(str)
+        preds = preds.rename(columns={"over_2.5": "over25", "c_over_9.5": "cover95"})
+        nat = preds["div"].isin([config.NL_CODE, "INT"])
+        preds = preds[(~nat & (preds["date"] >= since)) | (nat & (preds["date"] >= since_n))]
+        df = preds.merge(h.drop_duplicates(KEY), on=KEY, how="inner").dropna(subset=["hg"])
+        for r in df.itertuples(index=False):
+            g = lambda k: getattr(r, k, None)
+            t = g("tournament")
+            league = TOURNAMENTS_BG.get(t, t) if isinstance(t, str) and t and t != "nan" \
+                else config.DIV_NAMES.get(r.div, r.div)
+            out.append(_past_row(r.date, r.div, league, r.home, r.away, r.hg, r.ag, r.hc, r.ac,
+                                 g("p_home"), g("p_draw"), g("p_away"), g("over25"), g("btts_yes"),
+                                 g("cover95"), r.pick))
+            skip.add((r.date, r.home, r.away))
+    out += nations_retro(hist, since_n, skip)
+    return sorted(out, key=lambda m: (m["date"], m["div"]), reverse=True)

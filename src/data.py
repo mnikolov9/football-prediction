@@ -303,6 +303,7 @@ def load_internationals(offline: bool = False) -> tuple[pd.DataFrame, pd.DataFra
         "ag": pd.to_numeric(df["away_score"], errors="coerce"),
         "neutral": df["neutral"].astype(str).str.upper().eq("TRUE"),
         "wt": np.where(df["tournament"].astype(str).eq("Friendly"), config.FRIENDLY_WEIGHT, 1.0),
+        "tournament": df["tournament"].astype(str),
     })
     for c in COLUMNS:
         if c not in out:
