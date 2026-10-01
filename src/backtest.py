@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 import config
-from src import data, markets, params
+from src import bank, data, markets, params
 from src.predict import fit_group
 
 
@@ -60,14 +60,16 @@ def logloss_1x2(df: pd.DataFrame) -> float:
     return _metrics(P, np.eye(3)[res])[0]
 
 
-def value_profits(df: pd.DataFrame, market: str, cfg: dict | None = None) -> np.ndarray:
-    """Печалба (1 единица на залог) от value залозите по дадените правила."""
+def value_bet_log(df: pd.DataFrame, market: str, cfg: dict | None = None) -> list[dict]:
+    """Value залозите по дадените правила, по един ред на залог (за симулация на банка)."""
     cfg = cfg or {}
     if cfg.get("enabled") is False:
-        return np.array([])
+        return []
     kw = {"weight": cfg.get("weight"), "min_edge": cfg.get("min_edge")}
     out = []
     for r in df.itertuples():
+        base = {"date": r.date.strftime("%Y-%m-%d"), "home": getattr(r, "home", ""),
+                "away": getattr(r, "away", ""), "div": getattr(r, "div", "")}
         if market == "1X2":
             imp = markets.implied([r.oh, r.od, r.oa])
             if imp is None:
@@ -76,7 +78,8 @@ def value_profits(df: pd.DataFrame, market: str, cfg: dict | None = None) -> np.
             for k, (p, o, m) in enumerate([(r.ph, r.oh, r.mh), (r.pd, r.od, r.md), (r.pa, r.oa, r.ma)]):
                 v = markets.value_bet("1X2", str(k), p, o, m, imp[k], **kw)
                 if v:
-                    out.append(v["odds"] - 1 if res == k else -1.0)
+                    out.append({**base, "market": "1X2", "selection": "1X2"[k], "odds": v["odds"],
+                                "p": v["p"], "profit": v["odds"] - 1 if res == k else -1.0})
         else:
             imp = markets.implied([r.oo, r.ou])
             if imp is None:
@@ -85,8 +88,15 @@ def value_profits(df: pd.DataFrame, market: str, cfg: dict | None = None) -> np.
             for k, (p, o, m) in enumerate([(r.po, r.oo, r.mo), (1 - r.po, r.ou, r.mu_)]):
                 v = markets.value_bet("OU", "", p, o, m, imp[k], **kw)
                 if v:
-                    out.append(v["odds"] - 1 if over == (k == 0) else -1.0)
-    return np.array(out)
+                    out.append({**base, "market": "Голове", "selection": "Над 2.5" if k == 0 else "Под 2.5",
+                                "odds": v["odds"], "p": v["p"],
+                                "profit": v["odds"] - 1 if over == (k == 0) else -1.0})
+    return out
+
+
+def value_profits(df: pd.DataFrame, market: str, cfg: dict | None = None) -> np.ndarray:
+    """Печалба (1 единица на залог) от value залозите по дадените правила."""
+    return np.array([b["profit"] for b in value_bet_log(df, market, cfg)])
 
 
 def summarize(df: pd.DataFrame, value_cfg: dict | None = None) -> dict | None:
@@ -118,7 +128,11 @@ def summarize(df: pd.DataFrame, value_cfg: dict | None = None) -> dict | None:
 
 def backtest_country(hist: pd.DataFrame, name: str | None = None) -> dict | None:
     df = walk_forward(hist, name).reset_index(drop=True)
-    return summarize(df, params.for_group(name)["value"] if name else None)
+    value_cfg = params.for_group(name)["value"] if name else None
+    out = summarize(df, value_cfg)
+    if out is not None:
+        out["daily_log"] = bank.backtest_daily(df)      # кандидати за дневния залог в „Банка“
+    return out
 
 
 def backtest_nations_league(offline: bool = False, days: int = 900, step: int = 30) -> dict | None:
@@ -164,10 +178,10 @@ def run(offline: bool = False) -> dict:
         r = backtest_country(hist, country)
         if r:
             results[country] = r
-            print("  ", {k: round(v, 3) if isinstance(v, float) else v for k, v in r.items()})
+            print("  ", {k: round(v, 3) if isinstance(v, float) else v for k, v in r.items() if k != "daily_log"})
     print("Бектест: Лига на нациите")
     r = backtest_nations_league(offline)
     if r:
         results["Лига на нациите"] = r
-        print("  ", {k: round(v, 3) if isinstance(v, float) else v for k, v in r.items()})
+        print("  ", {k: round(v, 3) if isinstance(v, float) else v for k, v in r.items() if k != "daily_log"})
     return results

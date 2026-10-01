@@ -63,7 +63,8 @@ def tune_value(df: pd.DataFrame, market: str) -> dict:
     roi_v = float(pv.mean()) if len(pv) else None
     enabled = roi_t > 0 and roi_v is not None and roi_v > 0 and len(pv) >= MIN_BETS_VALID
     return {"enabled": bool(enabled), "weight": w, "min_edge": e,
-            "tune_roi": roi_t, "tune_bets": n_t, "valid_roi": roi_v, "valid_bets": int(len(pv))}
+            "tune_roi": roi_t, "tune_bets": n_t, "valid_roi": roi_v, "valid_bets": int(len(pv)),
+            "valid_from": pd.Timestamp(half).strftime("%Y-%m-%d")}
 
 
 def _print_boost(info: dict):
