@@ -431,7 +431,8 @@ function pastRow(m) {
   const corners = m.c_over != null && m.corners != null
     ? verdict(m.c_over >= 0.5 ? "Над 9.5" : "Под 9.5", (m.c_over >= 0.5) === (m.corners > 9.5), Math.max(m.c_over, 1 - m.c_over)) +
       ` <small style="color:var(--muted)">(${m.corners})</small>` : "–";
-  const star = dailyKeys.has(`${m.date}|${m.home}|${m.away}`) ? ' <span class="tag" style="margin:0 0 0 4px;padding:1px 6px">залог на деня</span>' : "";
+  const star = (dailyKeys.has(`${m.date}|${m.home}|${m.away}`) ? ' <span class="tag" style="margin:0 0 0 4px;padding:1px 6px">залог на деня</span>' : "") +
+    (m.retro ? ' <span class="tag warn" style="margin:0 0 0 4px;padding:1px 6px" title="Мачът е изигран преди сайтът да записва прогнози за него. Прогнозата е изчислена след това, но моделът е обучен само с мачовете преди него.">изчислена след мача</span>' : "");
   return `<tr><td>${esc(m.home)} – ${esc(m.away)}${star}<br><small style="color:var(--muted)">${esc(m.country)} · ${esc(m.league)}</small></td>
     <td class="n"><b>${m.hg}-${m.ag}</b></td>
     <td>${verdict(m.pick, m.pick === res, pPick)}</td>
@@ -444,7 +445,7 @@ function renderPast() {
   if (!PAST.length) { past.innerHTML = '<p class="empty">Още няма изиграни мачове с наша прогноза. Ще се появят след първите изиграни мачове.</p>'; return; }
   const L = pastOpt.league, T = pastOpt.team.trim().toLowerCase();
   const list = PAST.filter(m => (!L || m.div === L) && (!T || (m.home + " " + m.away).toLowerCase().includes(T)));
-  const leaguesP = [...new Map(PAST.map(m => [m.div, `${m.country} – ${m.league}`])).entries()];
+  const leaguesP = [...new Map(PAST.map(m => [m.div, m.div === "INT" ? "Национални отбори – други мачове" : `${m.country} – ${m.league}`])).entries()];
   const acc = f => { const xs = list.filter(m => f(m) != null); return xs.length ? pct(xs.filter(f).length / xs.length) : "–"; };
   const ok1 = m => m.pick === (m.hg > m.ag ? "1" : m.hg === m.ag ? "X" : "2");
   const okOU = m => m.over == null ? null : (m.over >= 0.5) === (m.hg + m.ag > 2.5);
@@ -455,7 +456,8 @@ function renderPast() {
       <input id="pTeam" placeholder="Търси отбор…" value="${esc(pastOpt.team)}"></div>
     <div class="kpis">${kpi("Мачове", list.length)}${kpi("Познат краен резултат", acc(ok1))}${kpi("Над/под 2.5", acc(okOU))}
       ${kpi("ГГ", acc(okGG))}${kpi("Корнери 9.5", acc(okC))}</div>
-    <p style="color:var(--muted);font-size:13px">Последната ни прогноза преди мача срещу реалния резултат (последните ${D.past_days ?? 60} дни). При всеки пазар е показан по-вероятният изход и вероятността му.</p>`;
+    <p style="color:var(--muted);font-size:13px">Последната ни прогноза преди мача срещу реалния резултат (клубовете – последните ${D.past_days ?? 60} дни). При всеки пазар е показан по-вероятният изход и вероятността му.
+      Националните отбори са за последните ${D.past_days_nations ?? 120} дни. Мачовете им отпреди сайтът да започне да записва прогнози са отбелязани „изчислена след мача“: моделът за тях е обучен само с мачовете преди тях.</p>`;
   if (!list.length) h += '<p class="empty">Няма мачове по тези критерии.</p>';
   for (const [day, ms] of groupBy(list, m => m.date).reverse()) {
     h += `<div class="day">${esc(withYear(day))}</div><div class="tbl"><table>
