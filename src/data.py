@@ -323,6 +323,7 @@ def load_internationals(offline: bool = False) -> tuple[pd.DataFrame, pd.DataFra
         man["time"] = (man["time"].fillna("").astype(str).str.slice(0, 5)
                        if "time" in man else "")
         man["wt"] = 1.0
+        man["tournament"] = "UEFA Nations League"
         for c in COLUMNS:
             if c not in man:
                 man[c] = np.nan
@@ -331,7 +332,7 @@ def load_internationals(offline: bool = False) -> tuple[pd.DataFrame, pd.DataFra
                       (hist["date"] >= pd.Timestamp.today() - pd.Timedelta(days=300))]
         played = set(zip(recent["home"], recent["away"]))
         man = man[~man.apply(lambda r: pd.isna(r["date"]) and (r["home"], r["away"]) in played, axis=1)]
-        fut = pd.concat([fut, man[fut.columns]], ignore_index=True)
+        fut = pd.concat([fut, man.reindex(columns=fut.columns)], ignore_index=True)
     fut = fut.drop_duplicates(["home", "away"], keep="first")
     return (hist.sort_values("date").reset_index(drop=True),
             fut.sort_values("date", na_position="last").reset_index(drop=True))
