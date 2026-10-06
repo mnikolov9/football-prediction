@@ -13,7 +13,7 @@ import json
 import time
 
 import config
-from src import backtest, bank, params, predict, site, tracking, tuning
+from src import backtest, bank, motd, params, predict, site, tracking, tuning
 
 
 def cmd_all(offline: bool):
@@ -33,6 +33,9 @@ def cmd_all(offline: bool):
         "backtest": bank.best_per_day([b for r in result["backtest"].values() if isinstance(r, dict)
                                        for b in r.pop("daily_log", [])]),
     }
+    # таб „Мач на деня“: един мач с коефициент над 2.00 + анализ
+    motd.log_daily(motd.daily_picks(result["matches"]), today.isoformat())
+    result["motd"] = motd.build(result, hist, today.isoformat())
     # таб „Минали мачове“: прогноза срещу резултат
     result["past"] = tracking.past_results(hist, days=config.PAST_DAYS, days_nations=config.PAST_DAYS_NATIONS)
     result["past_days"] = config.PAST_DAYS
