@@ -42,44 +42,44 @@
   }
  },
  "Испания": {
-  "xi": 0.001,
-  "l2": 3.0,
-  "logloss": 1.0138043109744501,
-  "logloss_default": 1.013948644685139,
-  "logloss_market": 0.9938195751606116,
+  "xi": 0.0019,
+  "l2": 1.0,
+  "logloss": 1.0107997799401687,
+  "logloss_default": 1.0107997799401687,
+  "logloss_market": 0.992625900642199,
   "value": {
    "1X2": {
-    "enabled": false,
-    "weight": 0.5,
-    "min_edge": 0.12,
-    "tune_roi": 0.07813953488372091,
-    "tune_bets": 86,
-    "valid_roi": -0.05754716981132077,
-    "valid_bets": 106,
+    "enabled": true,
+    "weight": 0.2,
+    "min_edge": 0.05,
+    "tune_roi": 0.21947368421052632,
+    "tune_bets": 57,
+    "valid_roi": 0.128641975308642,
+    "valid_bets": 81,
     "valid_from": "2026-04-05"
    },
    "OU": {
     "enabled": false,
     "weight": 0.7,
-    "min_edge": 0.03,
-    "tune_roi": -0.011370967741935491,
-    "tune_bets": 124,
-    "valid_roi": -0.07232876712328767,
-    "valid_bets": 146,
+    "min_edge": 0.05,
+    "tune_roi": -0.07252873563218391,
+    "tune_bets": 87,
+    "valid_roi": -0.08285714285714285,
+    "valid_bets": 119,
     "valid_from": "2026-04-05"
    }
   },
   "boost": {
    "enabled": false,
    "n_train": 853,
-   "n_valid": 472,
-   "logloss_dc": 1.0068615484659178,
-   "logloss_boost": 1.0095691115803425,
-   "ou_logloss_dc": 0.6786839094000077,
-   "ou_logloss_boost": 0.6767384550260335,
+   "n_valid": 473,
+   "logloss_dc": 1.006113506870094,
+   "logloss_boost": 1.009144458528098,
+   "ou_logloss_dc": 0.680218233088048,
+   "ou_logloss_boost": 0.6792053892049951,
    "trees": 50,
    "min_leaf": 150,
-   "xg_share": 0.44150943396226416,
+   "xg_share": 0.4411764705882353,
    "reason": "не подобрява Dixon–Coles"
   }
  },
@@ -209,7 +209,7 @@
    "reason": "не подобрява Dixon–Coles"
   }
  },
- "_generated": "2026-10-05",
+ "_generated": "2026-10-06",
  "Шампионска лига": {
   "boost": {
    "enabled": false,
@@ -220,12 +220,12 @@
  "Лига на нациите": {
   "boost": {
    "enabled": true,
-   "n_train": 955,
-   "n_valid": 518,
-   "logloss_dc": 0.9141599989054155,
-   "logloss_boost": 0.9109959175024942,
-   "ou_logloss_dc": 0.6695357984596815,
-   "ou_logloss_boost": 0.6629929077467824,
+   "n_train": 966,
+   "n_valid": 522,
+   "logloss_dc": 0.915816620827257,
+   "logloss_boost": 0.9116370272516077,
+   "ou_logloss_dc": 0.6650347353837734,
+   "ou_logloss_boost": 0.6579580013296601,
    "trees": 20,
    "min_leaf": 200,
    "xg_share": 0.0
