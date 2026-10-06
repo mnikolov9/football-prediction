@@ -36,12 +36,12 @@ jobs:
           key: raw-${{ github.run_id }}
           restore-keys: raw-
 
-      - name: Настройка на модела, LightGBM слоя и бектест (в понеделник или при първо пускане)
+      - name: Настройка на модела, LightGBM слоя и бектест (в понеделник, при ръчно или първо пускане)
         if: github.event_name == 'workflow_dispatch' || github.event.schedule == '0 5 * * *'
         env:
           FOOTBALL_DATA_ORG_KEY: ${{ secrets.FOOTBALL_DATA_ORG_KEY }}
         run: |
-          if [ "$(date -u +%u)" = "1" ] || [ ! -f data/tuned.json ]; then python run.py tune;
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$(date -u +%u)" = "1" ] || [ ! -f data/tuned.json ]; then python run.py tune;
           elif [ ! -f data/backtest.json ]; then python run.py backtest; fi
 
       - name: Прогнози и сайт
