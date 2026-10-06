@@ -66,6 +66,18 @@ h2{font-size:17px;margin:22px 0 6px}
 .bankctl label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
 .bankctl input{flex:none;width:110px;min-width:0}
 .bankctl label[hidden]{display:none}
+.motd-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:6px 0 4px}
+.motd-head .t{font-size:20px;font-weight:800}
+.motd-head .t.a{text-align:right}
+.pickbox{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin-top:12px}
+.pickbox .big{font-size:20px;font-weight:800;color:var(--accent)}
+.ins{margin:8px 0 0;padding-left:20px}.ins li{margin:4px 0}
+.cmp td{text-align:center}.cmp td:first-child,.cmp td:last-child{font-weight:700;width:30%}
+.cmp td.mid{color:var(--muted);font-size:13px}
+.fb{display:inline-block;width:20px;height:20px;line-height:20px;border-radius:5px;font-size:11px;font-weight:800;text-align:center;margin:0 1px;color:#fff}
+.fb.W{background:var(--accent)}.fb.D{background:var(--draw)}.fb.L{background:var(--away)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.two{grid-template-columns:1fr}.motd-head .t{font-size:17px}}
 #past td+td{white-space:nowrap}
 #past td:first-child{min-width:170px}
 .chart{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 12px 4px}
@@ -85,6 +97,7 @@ h2{font-size:17px;margin:22px 0 6px}
   <div class="top"><h1>Футболни прогнози</h1><span class="upd">Обновено: {{ generated }}</span></div>
   <nav id="tabs">
     <button data-t="pred" class="on">Прогнози</button>
+    <button data-t="motd">Мач на деня</button>
     <button data-t="value">Value залози</button>
     <button data-t="bank">Банка</button>
     <button data-t="past">Минали мачове</button>
@@ -102,6 +115,7 @@ h2{font-size:17px;margin:22px 0 6px}
     </div>
     <div id="matches"></div>
   </section>
+  <section id="motd" hidden></section>
   <section id="value" hidden></section>
   <section id="bank" hidden></section>
   <section id="past" hidden></section>
@@ -471,7 +485,67 @@ function renderPast() {
     pTeam._t = setTimeout(() => { renderPast(); const t = document.getElementById("pTeam"); t.focus(); t.setSelectionRange(t.value.length, t.value.length); }, 250); };
 }
 
-renderMatches(); renderValue(); renderBank(); renderPast(); renderPerf(); renderRatings();
+// ---- мач на деня
+const MO = D.motd || {current: null, history: []};
+const FB = {"П": "W", "Р": "D", "З": "L"};
+const formBadges = f => [...(f || "")].map(x => `<span class="fb ${FB[x]}" title="${x === "П" ? "победа" : x === "Р" ? "равен" : "загуба"}">${x}</span>`).join("");
+const fx = (v, d = 1) => v == null ? "–" : Number(v).toFixed(d);
+
+function renderMotd() {
+  const c = MO.current, minO = num(MO.min_odds ?? 2, 2);
+  let h = "";
+  if (!c) {
+    h += `<p class="empty">Днес няма мач със залог на коефициент поне ${minO}. Изборът се прави от крайния резултат и над/под 2.5 гола – пазарите с реални коефициенти.</p>`;
+  } else {
+    const m = c.match, p = c.pick, H = c.home, A = c.away;
+    h += `<div class="card">
+      <div class="meta"><span>${esc(m.country)} · ${esc(m.league)}</span><span>${esc(withYear(m.date))} ${esc(m.time)}</span></div>
+      <div class="motd-head"><span class="t">${esc(m.home_name || m.home)}</span><span class="xg">${fx(m.xg_home, 2)} – ${fx(m.xg_away, 2)}<br>очаквани голове</span><span class="t a">${esc(m.away_name || m.away)}</span></div>
+      <div class="pickbox"><span>Залог на деня</span><span class="big">${esc(p.market)}: ${esc(p.selection)} @ ${num(p.odds)}</span>
+        <span>Вероятност по модела <b>${pct(p.p)}</b></span><span>Пазарът дава <b>${pct(1 / p.odds)}</b></span>
+        <span class="${c.edge >= 0 ? "pos" : "neg"}">Предимство <b>${c.edge >= 0 ? "+" : "−"}${Math.abs(Math.round(c.edge * 100))}%</b></span></div>
+      <p style="color:var(--muted);font-size:12px;margin:8px 0 0">Избран е изходът с най-висока вероятност сред тези с коефициент поне ${minO} (краен резултат или над/под 2.5 гола).</p>
+    </div>`;
+    h += `<h2>Анализ</h2><div class="card"><ul class="ins">${c.insights.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+    h += `<h2>Прогноза на модела</h2>` + card(m);
+    const row = (label, a, b) => `<tr><td>${a}</td><td class="mid">${label}</td><td>${b}</td></tr>`;
+    h += `<h2>Статистика</h2><div class="tbl"><table class="cmp">
+      <tr><th style="text-align:center">${esc(H.name)}</th><th style="text-align:center"></th><th style="text-align:center">${esc(A.name)}</th></tr>
+      ${row("Форма (последни 5)", formBadges(H.form) || "–", formBadges(A.form) || "–")}
+      ${row("Точки на мач (5)", fx(H.ppg5, 2), fx(A.ppg5, 2))}
+      ${row("Вкарани / допуснати на мач (10)", `${fx(H.gf10)} / ${fx(H.ga10)}`, `${fx(A.gf10)} / ${fx(A.ga10)}`)}
+      ${H.xgf10 != null || A.xgf10 != null ? row("xG за / срещу на мач (10)", `${fx(H.xgf10)} / ${fx(H.xga10)}`, `${fx(A.xgf10)} / ${fx(A.xga10)}`) : ""}
+      ${H.cf10 != null || A.cf10 != null ? row("Корнери за / срещу (10)", `${fx(H.cf10)} / ${fx(H.ca10)}`, `${fx(A.cf10)} / ${fx(A.ca10)}`) : ""}
+      ${row("Над 2.5 гола (10)", pct(H.over25), pct(A.over25))}
+      ${row("Двата вкарват (10)", pct(H.btts), pct(A.btts))}
+      ${row("Суха мрежа (10)", pct(H.clean), pct(A.clean))}
+      ${row("Без гол (10)", pct(H.no_goal), pct(A.no_goal))}
+      ${row("Т./мач като домакин / гост (10)", `${fx(H.side_ppg, 2)} <small style="color:var(--muted)">(${H.side_n})</small>`, `${fx(A.side_ppg, 2)} <small style="color:var(--muted)">(${A.side_n})</small>`)}
+      ${row("Голове като домакин / гост", `${fx(H.side_gf)} – ${fx(H.side_ga)}`, `${fx(A.side_gf)} – ${fx(A.side_ga)}`)}
+      ${row("Дни почивка", H.rest ?? "–", A.rest ?? "–")}
+      </table></div>`;
+    const last = t => `<div><h2 style="font-size:15px">${esc(t.name)} – последни мачове</h2><div class="tbl"><table>
+      ${t.last5.map(x => `<tr><td>${esc(x.date.slice(5))}</td><td><span class="fb ${FB[x.res]}">${x.res}</span></td><td>${x.venue === "Д" ? "срещу" : "при"} ${esc(x.opp)}</td><td class="n"><b>${esc(x.score)}</b></td></tr>`).join("") || '<tr><td>няма данни</td></tr>'}
+      </table></div></div>`;
+    h += `<div class="two">${last(H)}${last(A)}</div>`;
+    h += `<h2>Преки срещи</h2>` + (c.h2h.length ? `<div class="tbl"><table>${c.h2h.map(x => `<tr><td>${esc(withYear(x.date))}</td><td>${esc(x.home)} – ${esc(x.away)}</td><td class="n"><b>${esc(x.score)}</b></td></tr>`).join("")}</table></div>`
+      : '<p style="color:var(--muted)">Няма преки срещи в данните (последните сезони).</p>');
+  }
+  const done = (MO.history || []).filter(b => b.profit != null);
+  if (done.length || (MO.history || []).length) {
+    const won = done.filter(b => b.profit > 0).length, prof = done.reduce((a, b) => a + b.profit, 0);
+    h += `<h2>Досегашни мачове на деня</h2>`;
+    if (done.length) h += `<div class="kpis">${kpi("Изиграни", done.length)}${kpi("Познати", `${won} (${pct(won / done.length)})`)}
+      ${kpi("Печалба при залог 1 единица", (prof >= 0 ? "+" : "−") + Math.abs(prof).toFixed(2), cls(prof))}${kpi("ROI", sPct(prof / done.length), cls(prof))}</div>`;
+    h += `<div class="tbl"><table><tr><th>Дата</th><th>Мач</th><th>Залог</th><th class="n">Вер.</th><th class="n">Коеф.</th><th class="n">Резултат</th></tr>
+      ${(MO.history || []).slice().reverse().map(b => `<tr><td>${esc(withYear(b.date))}</td><td>${esc(b.home)} – ${esc(b.away)}<br><small style="color:var(--muted)">${esc(b.league)}</small></td>
+        <td>${esc(b.market)}: <b>${esc(b.selection)}</b></td><td class="n">${pct(b.p)}</td><td class="n">${num(b.odds)}</td>
+        <td class="n">${b.profit == null ? '<span style="color:var(--muted)">предстои</span>' : `<b>${esc(b.score)}</b> ${b.profit > 0 ? '<span class="pos">✓</span>' : '<span class="neg">✗</span>'}`}</td></tr>`).join("")}</table></div>`;
+  }
+  motd.innerHTML = h;
+}
+
+renderMatches(); renderMotd(); renderValue(); renderBank(); renderPast(); renderPerf(); renderRatings();
 </script>
 </body>
 </html>
