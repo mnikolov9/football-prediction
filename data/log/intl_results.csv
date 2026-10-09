@@ -7,34 +7,34 @@ date,home,away,hg,ag
 2026-09-28,Turkey,Italy,1,4
 2026-09-28,Sweden,Poland,3,1
 2026-09-28,Northern Ireland,Hungary,0,0
-2026-09-29,Scotland,Switzerland,0,3
-2026-09-29,Slovakia,Kazakhstan,2,1
-2026-09-29,San Marino,Albania,0,3
-2026-09-29,Luxembourg,Iceland,0,3
-2026-09-29,Slovenia,North Macedonia,2,0
+2026-09-29,Moldova,Faroe Islands,1,1
+2026-09-29,Czech Republic,England,0,2
+2026-09-29,Finland,Belarus,0,0
 2026-09-29,Spain,Croatia,4,1
 2026-09-29,Bulgaria,Estonia,0,0
-2026-09-29,Finland,Belarus,0,0
-2026-09-29,Czech Republic,England,0,2
-2026-09-29,Moldova,Faroe Islands,1,1
-2026-10-01,Wales,Norway,2,1
-2026-10-01,Republic of Ireland,Austria,2,2
-2026-10-01,Israel,Kosovo,0,0
-2026-10-01,Malta,Gibraltar,1,1
-2026-10-01,Azerbaijan,Liechtenstein,0,0
-2026-10-01,Denmark,Portugal,2,4
-2026-10-01,Germany,Serbia,2,0
+2026-09-29,Luxembourg,Iceland,0,3
+2026-09-29,San Marino,Albania,0,3
+2026-09-29,Slovakia,Kazakhstan,2,1
+2026-09-29,Scotland,Switzerland,0,3
+2026-09-29,Slovenia,North Macedonia,2,0
 2026-10-01,Greece,Netherlands,2,2
-2026-10-02,France,Italy,1,1
-2026-10-02,Cyprus,Armenia,2,0
-2026-10-02,Latvia,Montenegro,1,2
-2026-10-02,Kazakhstan,Moldova,1,2
-2026-10-02,Belgium,Turkey,3,0
-2026-10-02,Ukraine,Northern Ireland,0,3
+2026-10-01,Germany,Serbia,2,0
+2026-10-01,Denmark,Portugal,2,4
+2026-10-01,Azerbaijan,Liechtenstein,0,0
+2026-10-01,Malta,Gibraltar,1,1
+2026-10-01,Republic of Ireland,Austria,2,2
+2026-10-01,Wales,Norway,2,1
+2026-10-01,Israel,Kosovo,0,0
 2026-10-02,Poland,Romania,6,0
-2026-10-02,Faroe Islands,Slovakia,1,1
-2026-10-02,Bosnia and Herzegovina,Sweden,1,1
 2026-10-02,Hungary,Georgia,1,0
+2026-10-02,Faroe Islands,Slovakia,1,1
+2026-10-02,Ukraine,Northern Ireland,0,3
+2026-10-02,Bosnia and Herzegovina,Sweden,1,1
+2026-10-02,Kazakhstan,Moldova,1,2
+2026-10-02,Latvia,Montenegro,1,2
+2026-10-02,Cyprus,Armenia,2,0
+2026-10-02,France,Italy,1,1
+2026-10-02,Belgium,Turkey,3,0
 2026-10-03,Switzerland,Slovenia,2,1
 2026-10-03,Finland,Albania,2,1
 2026-10-03,Belarus,San Marino,4,0
@@ -43,22 +43,22 @@ date,home,away,hg,ag
 2026-10-03,Estonia,Luxembourg,1,0
 2026-10-03,Spain,Czech Republic,3,1
 2026-10-03,North Macedonia,Scotland,0,2
-2026-10-04,Portugal,Norway,2,1
-2026-10-04,Netherlands,Serbia,2,1
-2026-10-04,Greece,Germany,0,0
-2026-10-04,Republic of Ireland,Israel,1,1
-2026-10-04,Kosovo,Austria,1,1
-2026-10-04,Malta,Andorra,1,0
-2026-10-04,Wales,Denmark,0,1
 2026-10-04,Azerbaijan,Lithuania,1,0
-2026-10-05,Italy,Turkey,3,1
-2026-10-05,France,Belgium,4,1
-2026-10-05,Bosnia and Herzegovina,Poland,1,0
-2026-10-05,Cyprus,Latvia,2,1
-2026-10-05,Romania,Sweden,0,1
-2026-10-05,Montenegro,Armenia,0,0
-2026-10-05,Ukraine,Hungary,1,2
+2026-10-04,Malta,Andorra,1,0
+2026-10-04,Kosovo,Austria,1,1
+2026-10-04,Wales,Denmark,0,1
+2026-10-04,Greece,Germany,0,0
+2026-10-04,Netherlands,Serbia,2,1
+2026-10-04,Portugal,Norway,2,1
+2026-10-04,Republic of Ireland,Israel,1,1
 2026-10-05,Northern Ireland,Georgia,0,0
+2026-10-05,Montenegro,Armenia,0,0
+2026-10-05,Romania,Sweden,0,1
+2026-10-05,Ukraine,Hungary,1,2
+2026-10-05,Bosnia and Herzegovina,Poland,1,0
+2026-10-05,France,Belgium,4,1
+2026-10-05,Italy,Turkey,3,1
+2026-10-05,Cyprus,Latvia,2,1
 2026-10-06,Albania,San Marino,2,1
 2026-10-06,Kazakhstan,Faroe Islands,2,2
 2026-10-06,Belarus,Finland,1,0
