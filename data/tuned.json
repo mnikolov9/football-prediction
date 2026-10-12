@@ -2,8 +2,8 @@
  "Англия": {
   "xi": 0.0045,
   "l2": 0.3,
-  "logloss": 1.0512899031705343,
-  "logloss_default": 1.0559166108969908,
+  "logloss": 1.0512899021245627,
+  "logloss_default": 1.0559166109321199,
   "logloss_market": 1.0287331624263005,
   "value": {
    "1X2": {
@@ -31,10 +31,10 @@
    "enabled": false,
    "n_train": 2016,
    "n_valid": 1088,
-   "logloss_dc": 1.0611007963956913,
-   "logloss_boost": 1.0604263057069596,
-   "ou_logloss_dc": 0.7045347215495047,
-   "ou_logloss_boost": 0.7005895600352764,
+   "logloss_dc": 1.061100797399187,
+   "logloss_boost": 1.0604263058170313,
+   "ou_logloss_dc": 0.7045347240626659,
+   "ou_logloss_boost": 0.7005895672563625,
    "trees": 20,
    "min_leaf": 200,
    "xg_share": 0.1797680412371134,
@@ -44,8 +44,8 @@
  "Испания": {
   "xi": 0.0019,
   "l2": 1.0,
-  "logloss": 1.0107997799401687,
-  "logloss_default": 1.0107997799401687,
+  "logloss": 1.0107997799401118,
+  "logloss_default": 1.0107997799401118,
   "logloss_market": 0.992625900642199,
   "value": {
    "1X2": {
@@ -73,10 +73,10 @@
    "enabled": false,
    "n_train": 853,
    "n_valid": 473,
-   "logloss_dc": 1.006113506870094,
-   "logloss_boost": 1.009144458528098,
-   "ou_logloss_dc": 0.680218233088048,
-   "ou_logloss_boost": 0.6792053892049951,
+   "logloss_dc": 1.0061135068698064,
+   "logloss_boost": 1.009144458527854,
+   "ou_logloss_dc": 0.6802182330879623,
+   "ou_logloss_boost": 0.6792053892049151,
    "trees": 50,
    "min_leaf": 150,
    "xg_share": 0.4411764705882353,
@@ -86,8 +86,8 @@
  "Италия": {
   "xi": 0.0045,
   "l2": 0.3,
-  "logloss": 1.0016566187675249,
-  "logloss_default": 1.0056926104437103,
+  "logloss": 1.0016566187675366,
+  "logloss_default": 1.0056926104437076,
   "logloss_market": 0.9822166144390931,
   "value": {
    "1X2": {
@@ -115,10 +115,10 @@
    "enabled": false,
    "n_train": 761,
    "n_valid": 411,
-   "logloss_dc": 1.0181826166189223,
-   "logloss_boost": 1.017350726710983,
-   "ou_logloss_dc": 0.717416563976208,
-   "ou_logloss_boost": 0.7194298357776185,
+   "logloss_dc": 1.0181826166196701,
+   "logloss_boost": 1.0173507267117088,
+   "ou_logloss_dc": 0.7174165639753993,
+   "ou_logloss_boost": 0.7194298357768557,
    "trees": 20,
    "min_leaf": 200,
    "xg_share": 0.4931740614334471,
@@ -128,8 +128,8 @@
  "Германия": {
   "xi": 0.0019,
   "l2": 1.0,
-  "logloss": 1.0320844078976703,
-  "logloss_default": 1.0320844078976703,
+  "logloss": 1.0320844078976927,
+  "logloss_default": 1.0320844078976927,
   "logloss_market": 1.0123579481539702,
   "value": {
    "1X2": {
@@ -157,10 +157,10 @@
    "enabled": false,
    "n_train": 629,
    "n_valid": 343,
-   "logloss_dc": 1.013528232120251,
-   "logloss_boost": 1.0140377439359167,
-   "ou_logloss_dc": 0.6619728074951806,
-   "ou_logloss_boost": 0.6677692558045841,
+   "logloss_dc": 1.013528232120344,
+   "logloss_boost": 1.0140377439360022,
+   "ou_logloss_dc": 0.6619728074951534,
+   "ou_logloss_boost": 0.6677692558045342,
    "trees": 20,
    "min_leaf": 200,
    "xg_share": 0.4763374485596708,
@@ -170,8 +170,8 @@
  "Франция": {
   "xi": 0.0045,
   "l2": 1.0,
-  "logloss": 1.046786361709113,
-  "logloss_default": 1.049004181989502,
+  "logloss": 1.0467863617090825,
+  "logloss_default": 1.0490041819895468,
   "logloss_market": 1.0299749121164745,
   "value": {
    "1X2": {
@@ -199,17 +199,17 @@
    "enabled": false,
    "n_train": 635,
    "n_valid": 345,
-   "logloss_dc": 1.0564522286489757,
-   "logloss_boost": 1.055965809344286,
-   "ou_logloss_dc": 0.680526929899364,
-   "ou_logloss_boost": 0.6768246402173259,
+   "logloss_dc": 1.0564522286490499,
+   "logloss_boost": 1.055965809344362,
+   "ou_logloss_dc": 0.6805269298993145,
+   "ou_logloss_boost": 0.6768246402172721,
    "trees": 50,
    "min_leaf": 150,
    "xg_share": 0.4826530612244898,
    "reason": "не подобрява Dixon–Coles"
   }
  },
- "_generated": "2026-10-06",
+ "_generated": "2026-10-12",
  "Шампионска лига": {
   "boost": {
    "enabled": false,
@@ -220,14 +220,14 @@
  "Лига на нациите": {
   "boost": {
    "enabled": true,
-   "n_train": 966,
-   "n_valid": 522,
-   "logloss_dc": 0.915816620827257,
-   "logloss_boost": 0.9116370272516077,
-   "ou_logloss_dc": 0.6650347353837734,
-   "ou_logloss_boost": 0.6579580013296601,
-   "trees": 20,
-   "min_leaf": 200,
+   "n_train": 1116,
+   "n_valid": 644,
+   "logloss_dc": 0.9143075698437351,
+   "logloss_boost": 0.9045898961525052,
+   "ou_logloss_dc": 0.6746554959413016,
+   "ou_logloss_boost": 0.6723001758665831,
+   "trees": 100,
+   "min_leaf": 100,
    "xg_share": 0.0
   }
  }
