@@ -2,214 +2,213 @@
  "Англия": {
   "xi": 0.0045,
   "l2": 0.3,
-  "logloss": 1.0519000620722847,
-  "logloss_default": 1.0555775718154365,
-  "logloss_market": 1.0277650381317123,
+  "logloss": 1.0503222921365343,
+  "logloss_default": 1.0545577198722331,
+  "logloss_market": 1.027428985817077,
   "value": {
    "1X2": {
     "enabled": false,
     "weight": 0.2,
     "min_edge": 0.03,
-    "tune_roi": -0.0002884615384615409,
-    "tune_bets": 208,
-    "valid_roi": -0.17343065693430657,
-    "valid_bets": 274,
-    "valid_from": "2026-03-20"
+    "tune_roi": 0.034368932038834954,
+    "tune_bets": 206,
+    "valid_roi": -0.19471428571428573,
+    "valid_bets": 280,
+    "valid_from": "2026-03-28"
    },
    "OU": {
     "enabled": false,
     "weight": 0.5,
     "min_edge": 0.03,
-    "tune_roi": -0.022580645161290335,
-    "tune_bets": 279,
-    "valid_roi": -0.08957831325301205,
-    "valid_bets": 332,
-    "valid_from": "2026-03-20"
+    "tune_roi": 0.0022382671480144344,
+    "tune_bets": 277,
+    "valid_roi": -0.09270348837209301,
+    "valid_bets": 344,
+    "valid_from": "2026-03-28"
    }
   },
   "boost": {
    "enabled": false,
-   "n_train": 1995,
-   "n_valid": 1083,
-   "logloss_dc": 1.0616914835895523,
-   "logloss_boost": 1.0611873067448854,
-   "ou_logloss_dc": 0.6995973086978919,
-   "ou_logloss_boost": 0.6965402972182898,
+   "n_train": 1981,
+   "n_valid": 1102,
+   "logloss_dc": 1.05662225237089,
+   "logloss_boost": 1.0561216646171878,
+   "ou_logloss_dc": 0.6997267302778558,
+   "ou_logloss_boost": 0.6958926635241063,
    "trees": 20,
    "min_leaf": 200,
-   "xg_share": 0.1806367771280052,
+   "xg_share": 0.17710022705157313,
    "reason": "не подобрява Dixon–Coles"
   }
  },
  "Испания": {
   "xi": 0.0019,
   "l2": 1.0,
-  "logloss": 1.008256601381221,
-  "logloss_default": 1.008256601381221,
-  "logloss_market": 0.9853845151997692,
+  "logloss": 1.0034162684129078,
+  "logloss_default": 1.0034162684129078,
+  "logloss_market": 0.9835024374377374,
   "value": {
    "1X2": {
     "enabled": false,
     "weight": 0.2,
-    "min_edge": 0.05,
-    "tune_roi": -0.004067796610169495,
-    "tune_bets": 59,
-    "valid_roi": 0.08650000000000001,
-    "valid_bets": 80,
-    "valid_from": "2026-04-12"
+    "min_edge": 0.03,
+    "tune_roi": -0.08885416666666668,
+    "tune_bets": 96,
+    "valid_roi": 0.13909090909090907,
+    "valid_bets": 110,
+    "valid_from": "2026-04-22"
    },
    "OU": {
     "enabled": false,
     "weight": 0.5,
     "min_edge": 0.05,
-    "tune_roi": -0.008918918918918897,
+    "tune_roi": 0.07783783783783782,
     "tune_bets": 37,
-    "valid_roi": -0.11329113924050634,
-    "valid_bets": 79,
-    "valid_from": "2026-04-12"
+    "valid_roi": -0.10262499999999997,
+    "valid_bets": 80,
+    "valid_from": "2026-04-22"
    }
   },
   "boost": {
    "enabled": false,
-   "n_train": 854,
+   "n_train": 855,
    "n_valid": 471,
-   "logloss_dc": 1.003219179262094,
-   "logloss_boost": 1.012676087533487,
-   "ou_logloss_dc": 0.6846795679803759,
-   "ou_logloss_boost": 0.6850196212914281,
-   "trees": 100,
-   "min_leaf": 100,
-   "xg_share": 0.44075471698113206,
+   "logloss_dc": 0.996529219003493,
+   "logloss_boost": 0.996994865306519,
+   "ou_logloss_dc": 0.6839691192125683,
+   "ou_logloss_boost": 0.6825875137831496,
+   "trees": 20,
+   "min_leaf": 200,
+   "xg_share": 0.4411764705882353,
    "reason": "не подобрява Dixon–Coles"
   }
  },
  "Италия": {
   "xi": 0.0045,
   "l2": 0.3,
-  "logloss": 1.0036779172420682,
-  "logloss_default": 1.0065056455085049,
-  "logloss_market": 0.979050967150844,
+  "logloss": 1.0007868514790987,
+  "logloss_default": 1.004012571597507,
+  "logloss_market": 0.9816241937268271,
   "value": {
    "1X2": {
     "enabled": false,
     "weight": 0.7,
     "min_edge": 0.03,
-    "tune_roi": -0.1062555066079295,
-    "tune_bets": 227,
-    "valid_roi": -0.08603686635944702,
-    "valid_bets": 217,
-    "valid_from": "2026-03-18"
+    "tune_roi": -0.0944700460829493,
+    "tune_bets": 217,
+    "valid_roi": -0.08592105263157897,
+    "valid_bets": 228,
+    "valid_from": "2026-03-22"
    },
    "OU": {
     "enabled": true,
     "weight": 0.35,
     "min_edge": 0.03,
-    "tune_roi": 0.26299999999999996,
+    "tune_roi": 0.2525,
     "tune_bets": 40,
-    "valid_roi": 0.033333333333333326,
-    "valid_bets": 72,
-    "valid_from": "2026-03-18"
+    "valid_roi": 0.032162162162162146,
+    "valid_bets": 74,
+    "valid_from": "2026-03-22"
    }
   },
   "boost": {
    "enabled": false,
-   "n_train": 731,
-   "n_valid": 400,
-   "logloss_dc": 1.0083128084181485,
-   "logloss_boost": 1.0070259038223919,
-   "ou_logloss_dc": 0.7068684826236055,
-   "ou_logloss_boost": 0.7076080417749488,
+   "n_train": 733,
+   "n_valid": 398,
+   "logloss_dc": 1.0241782553736887,
+   "logloss_boost": 1.0224456546559182,
+   "ou_logloss_dc": 0.7131373675804792,
+   "ou_logloss_boost": 0.7138012939555411,
    "trees": 20,
    "min_leaf": 200,
-   "xg_share": 0.49248452696728556,
+   "xg_share": 0.493368700265252,
    "reason": "не подобрява Dixon–Coles"
   }
  },
  "Германия": {
   "xi": 0.0019,
   "l2": 1.0,
-  "logloss": 1.027251647274568,
-  "logloss_default": 1.027251647274568,
-  "logloss_market": 1.0128085337826291,
+  "logloss": 1.01983119667888,
+  "logloss_default": 1.01983119667888,
+  "logloss_market": 1.0075053823512614,
   "value": {
    "1X2": {
     "enabled": false,
     "weight": 0.7,
     "min_edge": 0.03,
-    "tune_roi": -0.22365384615384615,
-    "tune_bets": 156,
-    "valid_roi": -0.0436065573770492,
-    "valid_bets": 183,
-    "valid_from": "2026-04-04"
+    "tune_roi": -0.19282208588957056,
+    "tune_bets": 163,
+    "valid_roi": -0.04296511627906977,
+    "valid_bets": 172,
+    "valid_from": "2026-04-11"
    },
    "OU": {
     "enabled": false,
     "weight": 0.5,
     "min_edge": 0.05,
-    "tune_roi": -0.05068181818181819,
-    "tune_bets": 44,
-    "valid_roi": -0.1348,
-    "valid_bets": 75,
-    "valid_from": "2026-04-04"
+    "tune_roi": -0.03214285714285715,
+    "tune_bets": 42,
+    "valid_roi": -0.08243902439024392,
+    "valid_bets": 82,
+    "valid_from": "2026-04-11"
    }
   },
   "boost": {
    "enabled": false,
-   "n_train": 606,
-   "n_valid": 330,
-   "logloss_dc": 1.0300303544776352,
-   "logloss_boost": 1.0280794544375411,
-   "ou_logloss_dc": 0.6644961343192833,
-   "ou_logloss_boost": 0.6661546595678863,
+   "n_train": 605,
+   "n_valid": 331,
+   "logloss_dc": 1.0248951726438318,
+   "logloss_boost": 1.0242727278716761,
+   "ou_logloss_dc": 0.6687847825147266,
+   "ou_logloss_boost": 0.6690099084404019,
    "trees": 20,
    "min_leaf": 200,
-   "xg_share": 0.4754273504273504,
+   "xg_share": 0.47649572649572647,
    "reason": "не подобрява Dixon–Coles"
   }
  },
  "Франция": {
-  "xi": 0.003,
+  "xi": 0.0045,
   "l2": 1.0,
-  "logloss": 1.048054777714034,
-  "logloss_default": 1.0496306504047193,
-  "logloss_market": 1.026877990429329,
+  "logloss": 1.0441719178515805,
+  "logloss_default": 1.0460713544361622,
+  "logloss_market": 1.0241709020670693,
   "value": {
    "1X2": {
     "enabled": false,
     "weight": 0.7,
-    "min_edge": 0.05,
-    "tune_roi": -0.19331034482758622,
-    "tune_bets": 145,
-    "valid_roi": -0.0014970059880239786,
-    "valid_bets": 167,
-    "valid_from": "2026-04-10"
+    "min_edge": 0.03,
+    "tune_roi": -0.25159090909090903,
+    "tune_bets": 176,
+    "valid_roi": -0.0021658986175115153,
+    "valid_bets": 217,
+    "valid_from": "2026-04-12"
    },
    "OU": {
     "enabled": false,
-    "weight": 0.5,
-    "min_edge": 0.05,
-    "tune_roi": -0.11333333333333334,
-    "tune_bets": 45,
-    "valid_roi": -0.034285714285714315,
-    "valid_bets": 56,
-    "valid_from": "2026-04-10"
+    "weight": 0.7,
+    "min_edge": 0.03,
+    "tune_roi": -0.13913793103448274,
+    "tune_bets": 116,
+    "valid_roi": -0.023719008264462802,
+    "valid_bets": 121,
+    "valid_from": "2026-04-12"
    }
   },
   "boost": {
-   "enabled": false,
+   "enabled": true,
    "n_train": 611,
    "n_valid": 333,
-   "logloss_dc": 1.0447685775679045,
-   "logloss_boost": 1.0435351147556218,
-   "ou_logloss_dc": 0.6751433432428122,
-   "ou_logloss_boost": 0.6734781535557671,
+   "logloss_dc": 1.0424827526750513,
+   "logloss_boost": 1.0401615371619297,
+   "ou_logloss_dc": 0.6789308745819018,
+   "ou_logloss_boost": 0.6771144786653652,
    "trees": 20,
    "min_leaf": 200,
-   "xg_share": 0.4819915254237288,
-   "reason": "не подобрява Dixon–Coles"
+   "xg_share": 0.4819915254237288
   }
  },
- "_generated": "2026-10-19",
+ "_generated": "2026-10-26",
  "Шампионска лига": {
   "boost": {
    "enabled": false,
@@ -222,10 +221,10 @@
    "enabled": true,
    "n_train": 1116,
    "n_valid": 644,
-   "logloss_dc": 0.9143075698437351,
-   "logloss_boost": 0.9045898961525052,
-   "ou_logloss_dc": 0.6746554959413016,
-   "ou_logloss_boost": 0.6723001758665831,
+   "logloss_dc": 0.9143449072582204,
+   "logloss_boost": 0.9044322397079126,
+   "ou_logloss_dc": 0.6746786165012092,
+   "ou_logloss_boost": 0.6717133724340814,
    "trees": 100,
    "min_leaf": 100,
    "xg_share": 0.0
