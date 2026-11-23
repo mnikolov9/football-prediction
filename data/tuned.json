@@ -44,18 +44,18 @@
  "Испания": {
   "xi": 0.001,
   "l2": 1.0,
-  "logloss": 0.9984225474137949,
-  "logloss_default": 0.9984845545333285,
-  "logloss_market": 0.9773303922117782,
+  "logloss": 0.9952535579195313,
+  "logloss_default": 0.9954155452577118,
+  "logloss_market": 0.9759765847200637,
   "value": {
    "1X2": {
     "enabled": false,
     "weight": 0.2,
     "min_edge": 0.05,
-    "tune_roi": 0.2805970149253731,
-    "tune_bets": 67,
-    "valid_roi": -0.042658227848101235,
-    "valid_bets": 79,
+    "tune_roi": 0.3,
+    "tune_bets": 66,
+    "valid_roi": -0.07233766233766234,
+    "valid_bets": 77,
     "valid_from": "2026-05-10"
    },
    "OU": {
@@ -64,22 +64,22 @@
     "min_edge": 0.03,
     "tune_roi": -0.015624999999999972,
     "tune_bets": 32,
-    "valid_roi": -0.02089552238805972,
-    "valid_bets": 67,
+    "valid_roi": -0.009285714285714284,
+    "valid_bets": 70,
     "valid_from": "2026-05-10"
    }
   },
   "boost": {
    "enabled": false,
    "n_train": 857,
-   "n_valid": 466,
-   "logloss_dc": 0.9980609151638452,
-   "logloss_boost": 0.9984879243014477,
-   "ou_logloss_dc": 0.6826746350407291,
-   "ou_logloss_boost": 0.6809105975420474,
+   "n_valid": 467,
+   "logloss_dc": 0.9971844054738974,
+   "logloss_boost": 0.9971715657250532,
+   "ou_logloss_dc": 0.6837910720057631,
+   "ou_logloss_boost": 0.682478450984846,
    "trees": 20,
    "min_leaf": 200,
-   "xg_share": 0.4436885865457294,
+   "xg_share": 0.4433534743202417,
    "reason": "не подобрява Dixon–Coles"
   }
  },
@@ -208,7 +208,7 @@
    "reason": "не подобрява Dixon–Coles"
   }
  },
- "_generated": "2026-11-16",
+ "_generated": "2026-11-23",
  "Шампионска лига": {
   "boost": {
    "enabled": false,
@@ -219,12 +219,12 @@
  "Лига на нациите": {
   "boost": {
    "enabled": true,
-   "n_train": 1095,
-   "n_valid": 601,
-   "logloss_dc": 0.9043277073202156,
-   "logloss_boost": 0.8943597255435793,
-   "ou_logloss_dc": 0.6718788140270958,
-   "ou_logloss_boost": 0.669061235107284,
+   "n_train": 1105,
+   "n_valid": 623,
+   "logloss_dc": 0.8605893331474683,
+   "logloss_boost": 0.8546098689211914,
+   "ou_logloss_dc": 0.6694292698410343,
+   "ou_logloss_boost": 0.6645630252716783,
    "trees": 100,
    "min_leaf": 100,
    "xg_share": 0.0
